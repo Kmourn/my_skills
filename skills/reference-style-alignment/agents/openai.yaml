@@ -1,0 +1,4 @@
+interface:
+  display_name: "参考风格对齐"
+  short_description: "从指定样稿、图片、数据图和PPT提取有依据的风格特征，制作并逐项核对。"
+  default_prompt: "使用 $reference-style-alignment 按提供的参考风格完成目标内容，并说明关键特征的对齐结果。"
