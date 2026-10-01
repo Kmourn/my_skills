@@ -5,7 +5,7 @@ This document provides comprehensive guidance on checking and validating statist
 ## General Principles
 
 1. **Always check assumptions before interpreting test results**
-2. **Use multiple diagnostic methods** (visual + formal tests)
+2. **Use relevant diagnostic methods** (design assessment, plots, and formal tests where informative); non-rejection does not establish an assumption.
 3. **Consider robustness**: Some tests are robust to violations under certain conditions
 4. **Document all assumption checks** in analysis reports
 5. **Report violations and remedial actions taken**
@@ -35,8 +35,8 @@ This document provides comprehensive guidance on checking and validating statist
 **What it means**: Data or residuals follow a normal (Gaussian) distribution.
 
 **When required**:
-- t-tests (for small samples; robust for n > 30 per group)
-- ANOVA (for small samples; robust for n > 30 per group)
+- t-tests (group distributions for independent means; within-pair differences for paired means, interpreted with robustness and sampling assumptions)
+- ANOVA (model errors or within-group distributions, interpreted with the design and robustness of the intended inference)
 - Linear regression (for residuals)
 - Some correlation tests (Pearson)
 
@@ -65,19 +65,14 @@ stats.probplot(data, dist="norm", plot=plt)
 ```
 
 **Interpretation guidance**:
-- For n < 30: Both visual and formal tests important
-- For 30 ≤ n < 100: Visual inspection primary, formal tests secondary
-- For n ≥ 100: Formal tests overly sensitive; rely on visual inspection
+- A Shapiro-Wilk non-rejection does not prove normality; rejection alone does not select a replacement analysis.
+- Interpret diagnostic sensitivity and precision with the sample size, plots, scientific target, and design. Fixed thresholds such as 30 or 100 do not certify model suitability.
 - Look for severe skewness, outliers, or bimodality
 
 **What to do if violated**:
-- **Mild violations** (slight skewness): Proceed if n > 30 per group (this CLT heuristic assumes mild skewness; severely skewed or heavy-tailed data can require much larger samples)
-- **Moderate violations**: Use non-parametric alternatives (Mann-Whitney, Kruskal-Wallis, Wilcoxon)
-- **Severe violations**:
-  - Transform data (log, square root, Box-Cox)
-  - Use non-parametric methods
-  - Use robust regression methods
-  - Consider bootstrapping
+- Reassess the intended inference with skewness, tails, influential observations, and dependence in view.
+- Consider justified robust estimation, model-based inference, or resampling for the original target. Document any changed analysis and its assumptions.
+- A transformation or rank test may answer a different question. Explain that change instead of treating it as an automatic remedy.
 
 **Critical severity**: MEDIUM - parametric tests are often robust to mild violations with adequate sample size
 
@@ -88,8 +83,8 @@ stats.probplot(data, dist="norm", plot=plt)
 **What it means**: Variances are equal across groups or across the range of predictors.
 
 **When required**:
-- Independent samples t-test
-- ANOVA
+- Pooled-variance Student t-test; Welch's t-test does not assume equal group variances
+- Ordinary one-way ANOVA; Welch's ANOVA allows unequal group variances
 - Linear regression (constant variance of residuals)
 
 **How to check**:
@@ -122,7 +117,8 @@ _, p_value, _, _ = het_breuschpagan(residuals, exog)
 ```
 
 **Interpretation guidance**:
-- Variance ratio (max/min) < 2-3: Generally acceptable
+- A variance ratio is descriptive; no fixed ratio establishes acceptable inference.
+- Levene non-rejection does not establish equal variances or justify a pooled-variance test by itself.
 - For ANOVA: Test is robust if groups have equal sizes
 - For regression: Look for funnel patterns in residual plots
 
@@ -146,28 +142,28 @@ _, p_value, _, _ = het_breuschpagan(residuals, exog)
 **Assumptions**:
 1. Independence of observations
 2. Normality (each group for independent t-test; differences for paired t-test)
-3. Homogeneity of variance (independent t-test only)
+3. Homogeneity of variance for the pooled Student test, not for Welch's test
 
 **Diagnostic workflow**:
 ```python
 import scipy.stats as stats
 import pingouin as pg
 
-# Check normality for each group
+# For independent mean contrasts, inspect group distributions and influential observations.
 stats.shapiro(group1)
 stats.shapiro(group2)
+# For a paired mean contrast, assess within-pair differences instead.
+# stats.shapiro(group1 - group2)
 
 # Check homogeneity of variance
 stats.levene(group1, group2)
 
-# If assumptions violated:
-# Option 1: Welch's t-test (unequal variances)
+# A mean-contrast analysis permitting unequal variances:
 pg.ttest(group1, group2, correction=True)  # correction=True applies Welch's
-# (correction='auto' applies Welch only when variances/group sizes are unequal;
-# correction=False forces Student's t-test)
+# Use explicit settings for the intended model rather than diagnostic-driven switching.
 
-# Option 2: Non-parametric alternative
-pg.mwu(group1, group2)  # Mann-Whitney U
+# For an appropriate rank/distribution target with its own assumptions:
+pg.mwu(group1, group2)  # Not an automatic substitute for a mean contrast.
 ```
 
 ---
@@ -285,7 +281,7 @@ vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(len(X.c
 1. **Independence**: Observations are independent
 2. **Linearity**: Linear relationship between log-odds and continuous predictors
 3. **No perfect multicollinearity**: Predictors not perfectly correlated
-4. **Large sample size**: At least 10-20 events per predictor
+4. **Adequate information**: Justify sample size for event frequency, model complexity, and estimation method; a fixed events-per-predictor rule is not a guarantee.
 
 **Diagnostic workflow**:
 
@@ -345,22 +341,16 @@ cooks_d, cooks_p = influence.cooks_distance  # returns a tuple: (distances, p_va
 
 ## Sample Size Considerations
 
-### Minimum Sample Sizes (Rules of Thumb)
+### Design-specific justification
 
-- **T-test**: n ≥ 30 per group for robustness to non-normality
-- **ANOVA**: n ≥ 30 per group
-- **Correlation**: n ≥ 30 for adequate power
-- **Simple regression**: n ≥ 50
-- **Multiple regression**: 10-15 observations per predictor (or Green's rule: n ≥ 50 + 8k for testing the overall model with k predictors)
-- **Logistic regression**: n ≥ 10-20 events per predictor
+Specify the estimand, independent sampling or experimental unit, plausible variation or effect scenarios, precision or power target, dependence, missingness, and model complexity. Use an appropriate calculation or simulation and state its assumptions. A fixed number of observations, events, or seeds does not certify power, robustness, or validity.
 
 ### Small Sample Considerations
 
 For small samples:
 - Assumptions become more critical
 - Use exact tests when available (Fisher's exact, exact logistic regression)
-- Consider non-parametric alternatives
-- Use permutation tests or bootstrap methods
+- Consider rank, exact, permutation, or bootstrap methods only when their target and assumptions fit the design.
 - Be conservative with interpretation
 
 ---

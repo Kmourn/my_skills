@@ -3,17 +3,22 @@
 This scaffold is intentionally incomplete. Remove this banner only after every local
 validator passes and accountable human authors approve the final document.
 
-# [[TODO: verified title]]
+For an authorized internal draft, use recorded source material and actual local results.
+Mark pending human review beside the corresponding claim/evidence IDs and retain
+`unverified` states. Missing facts remain placeholders; final readiness requires human
+verification and approval.
+
+# [[TODO: draft title reflecting the methods and actual results]]
 
 ## Abstract
 
-[[TODO: draft from verified methods and results only; preserve uncertainty and append
-claim and evidence markers to every factual or numeric assertion]]
+[[TODO: draft from recorded methods and actual results; preserve uncertainty, pending
+human review, and claim/evidence markers for every factual or numeric assertion]]
 
 ## Introduction
 
-[[TODO: establish context from verified sources, state the gap without exaggeration,
-and distinguish prior evidence from the present study]]
+[[TODO: establish context from recorded source material, mark pending human review,
+state the gap without exaggeration, and distinguish prior evidence from this study]]
 
 ## Methods
 
@@ -28,8 +33,8 @@ consistent]]
 
 ## Discussion
 
-[[TODO: interpret only supported results, compare with verified evidence, preserve
-alternative explanations, and state concrete limitations]]
+[[TODO: interpret supported results, compare with recorded evidence while marking
+pending human review, preserve alternatives, and state concrete limitations]]
 
 ## Author contributions
 
@@ -61,5 +66,5 @@ required; AI is not an author and humans remain accountable]]
 
 ## References
 
-[[TODO: render only entries whose metadata and identifiers were verified against the
-opened source]]
+[[TODO: retain located source IDs and pending review in the internal draft; render final
+entries only after metadata and identifiers are verified against the opened source]]

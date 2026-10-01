@@ -11,26 +11,26 @@ Use the current task's research question, proposal, constraints, and existing re
 
 Use this skill after the method is stable enough that the next question becomes: **what exact experiments should we run, in what order, to test the claims?** For a task that spans question formation through writing, use `research-cycle` to coordinate the broader work.
 
-The goal is not to generate a giant benchmark wishlist. The goal is to turn a proposal into a **claim -> evidence -> run order** roadmap that supports four things:
+Turn a proposal into a compact **claim -> discriminating evidence -> run order** roadmap that tests:
 
-1. the method actually solves the anchored problem
-2. the dominant contribution is real and focused
-3. the method is elegant enough that extra complexity is unnecessary
-4. any frontier-model-era component is genuinely useful, not decorative
+1. whether the method solves the anchored problem
+2. whether the dominant contribution accounts for the observed benefit
+3. whether extra complexity is needed
+4. whether any central frontier-model-era component adds value
 
-## Constants
+## Planning heuristics
 
-- **OUTPUT_DIR = the current task's research workspace** — Reuse existing records when present; otherwise use a task-local `research/` directory.
-- **MAX_PRIMARY_CLAIMS = 2** — Prefer one dominant claim plus one supporting claim.
-- **MAX_CORE_BLOCKS = 5** — Keep the must-run experimental story compact.
-- **MAX_BASELINE_FAMILIES = 3** — Prefer a few strong baselines over many weak ones.
-- **DEFAULT_SEEDS = 3** — Use 3 seeds when stochastic variance matters and budget allows.
+- Use the current task's research workspace and existing records; a task-local `research/` directory is one option when none exists.
+- Start with one dominant claim and an optional supporting claim, a few decisive experiment blocks, and strong baseline families. Adjust their number to the question and constraints; these are compactness heuristics, not scientific acceptance thresholds.
+- Choose repetitions and random seeds from the sources of stochastic variation, required precision, available variance estimates, budget, and a declared stopping rule. Do not prescribe a universal seed count or treat a completed count as sufficient evidence. If the rationale is not yet available, mark it pending; deterministic runs need no artificial seed repetition.
 
 ## Workflow
 
 ### Phase 0: Load the Proposal Context
 
 Read the most relevant existing proposal, review, and research-record files when they exist; do not require particular filenames.
+
+Reuse their claim/prediction IDs and artifact links. Preserve the plan version being tested and distinguish planned runs from actual outputs; do not rebuild completed work as a new plan.
 
 Extract:
 
@@ -43,18 +43,18 @@ Extract:
 
 If these files do not exist, derive the same information from the user's prompt.
 
-### Phase 1: Freeze the Paper Claims
+### Phase 1: State the Claims to Test
 
-Before proposing experiments, write down the claims that must be defended.
+Before proposing experiments, write down the claims and predictions to test, including meaningful rival explanations.
 
 Use this structure:
 
 - **Primary claim**: the main mechanism-level contribution
 - **Supporting claim**: optional, only if it directly strengthens the main paper story
-- **Anti-claim to rule out**: e.g. "the gain only comes from more parameters," "the gain only comes from a larger search space," or "the modern component is just decoration"
-- **Minimum convincing evidence**: what would make each claim believable to a strong reviewer?
+- **Rival explanation**: e.g. "the gain only comes from more parameters," "the gain only comes from a larger search space," or "the modern component adds no value"
+- **Discriminating evidence**: what outcomes would support, challenge, or leave each claim unresolved under stated assumptions?
 
-Do not exceed `MAX_PRIMARY_CLAIMS` unless the paper truly has multiple inseparable claims.
+Keep only the claims needed to answer the question; record why additional inseparable claims are necessary when relevant.
 
 ### Phase 2: Build the Experimental Storyline
 
@@ -78,14 +78,14 @@ Prefer one strong baseline family over many weak baselines. If a stronger modern
 
 For every kept block, fully specify:
 
-- **Claim tested**
+- **Claim / prediction tested**: reuse existing IDs
 - **Why this block exists**
 - **Dataset / split / task**
 - **Compared systems**: strongest baselines, ablations, and variants only
 - **Metrics**: decisive metrics first, secondary metrics second
-- **Setup details**: backbone, frozen vs trainable parts, key hyperparameters, training budget, seeds
-- **Success criterion**: what outcome would count as convincing evidence?
-- **Failure interpretation**: if the result is negative, what does it mean?
+- **Setup details**: backbone, frozen vs trainable parts, key hyperparameters, training budget, repetitions/seeds and their rationale
+- **Decision criteria**: supporting, challenging, and indeterminate outcomes, plus the stopping rule
+- **Failure interpretation**: distinguish an execution failure from a negative or inconclusive scientific result
 - **Table / figure target**: where this result should appear in the paper
 
 Special rules:
@@ -117,9 +117,9 @@ Separate **must-run** from **nice-to-have** experiments.
 
 ### Phase 5: Write the Outputs
 
-#### Step 5.1: Write `EXPERIMENT_PLAN.md` in the task's research workspace
+#### Step 5.1: Update the existing plan or research record
 
-Use this structure:
+Reuse the existing file, section, IDs, and links. Create a separate plan only when it helps review or execution; `EXPERIMENT_PLAN.md` is an example filename. Adapt this structure to missing information rather than duplicating an existing record:
 
 ```markdown
 # Experiment Plan
@@ -127,27 +127,28 @@ Use this structure:
 **Problem**: [problem]
 **Method Thesis**: [one-sentence thesis]
 **Date**: [today]
+**Plan version / existing record**: [version and link]
 
 ## Claim Map
-| Claim | Why It Matters | Minimum Convincing Evidence | Linked Blocks |
+| Claim / Prediction ID | Why It Matters | Discriminating Evidence | Linked Blocks |
 |-------|-----------------|-----------------------------|---------------|
 | C1    | ...             | ...                         | B1, B2        |
 
 ## Paper Storyline
-- Main paper must prove:
+- Main paper must test and report:
 - Appendix can support:
 - Experiments intentionally cut:
 
 ## Experiment Blocks
 
 ### Block 1: [Name]
-- Claim tested:
+- Claim / prediction tested:
 - Why this block exists:
 - Dataset / split / task:
 - Compared systems:
 - Metrics:
-- Setup details:
-- Success criterion:
+- Setup details and repetition/seed rationale:
+- Decision criteria and stopping rule:
 - Failure interpretation:
 - Table / figure target:
 - Priority: MUST-RUN / NICE-TO-HAVE
@@ -172,25 +173,25 @@ Use this structure:
 
 ## Final Checklist
 - [ ] Main paper tables are covered
-- [ ] Novelty is isolated
-- [ ] Simplicity is defended
-- [ ] Frontier contribution is justified or explicitly not claimed
+- [ ] Core claims have supporting, challenging, and indeterminate outcome criteria
+- [ ] Novelty, simplicity, and any frontier contribution are tested where claimed
+- [ ] Negative results, execution failures, and deviations have a place in the existing record
 - [ ] Nice-to-have runs are separated from must-run runs
 ```
 
-#### Step 5.2: Write `EXPERIMENT_TRACKER.md` in the same workspace when tracking actual runs will be useful
+#### Step 5.2: Extend existing run tracking when useful
 
-Use this structure:
+Use the current run table or linked run records. A separate `EXPERIMENT_TRACKER.md` is optional. Keep detailed setup and metrics in their existing records; this table can provide the connections:
 
 ```markdown
 # Experiment Tracker
 
-| Run ID | Milestone | Purpose | System / Variant | Split | Metrics | Priority | Status | Notes |
-|--------|-----------|---------|------------------|-------|---------|----------|--------|-------|
-| R001   | M0        | sanity  | ...              | ...   | ...     | MUST     | TODO   | ...   |
+| Run ID | Claim / Prediction / Block | Plan version / planned setup | Actual run / output or failure | Analysis / figure / manuscript | Status / deviations |
+|--------|----------------------------|------------------------------|--------------------------------|--------------------------------|---------------------|
+| R001   | C1 / P1 / B1               | [plan and setup link]        | pending                        | pending                        | planned             |
 ```
 
-Keep the tracker compact and execution-oriented.
+After an authorized run, link its command, code/data/environment versions, actual parameters and seeds, and raw output or failure record. Analysis and figure/manuscript links are added when available. Preserve unsuccessful runs and the plan they tested; record deviations instead of silently rewriting the plan. Reuse existing IDs, or retain one mapping when a downstream tool requires a different format. Do not copy the same result into several registries.
 
 #### Step 5.3: Present a Brief Summary to the User
 
@@ -204,23 +205,21 @@ Must-run blocks:
 Highest-risk assumption:
 - [risk]
 
-First three runs to launch:
-1. [run]
-2. [run]
-3. [run]
+Next proposed runs, subject to existing task authorization:
+- [run or unresolved prerequisite]
 
-Plan file: <task research workspace>/EXPERIMENT_PLAN.md
-Tracker file, when needed: <task research workspace>/EXPERIMENT_TRACKER.md
+Plan / research record: <existing file or section>
+Run tracking, when needed: <existing table or file>
 ```
 
 ## Key Rules
 
 - **Planning is not execution permission.** Run only software experiments already authorized for the task; never auto-run ROS nodes or physical-motion tests.
 
-- **Every experiment must defend a claim.** If it does not change a reviewer belief, cut it.
-- **Prefer a compact paper story.** Design the main table first, then add only the ablations that defend it.
+- **Every experiment needs a purpose.** Test a claim or prediction, distinguish rivals, or establish that the pipeline and metrics can produce interpretable evidence; cut runs that add no useful information.
+- **Prefer a compact paper story.** Design the main comparisons first, then add the ablations needed to interpret them.
 - **Defend simplicity explicitly.** If complexity is a concern, include a deletion study or a stronger-but-bloated variant comparison.
-- **Defend frontier choices explicitly.** If a modern primitive is central, prove why it is better than the strongest simpler alternative.
+- **Test frontier choices explicitly.** If a modern primitive is central, compare it with the strongest plausible simpler alternative and report what the evidence supports.
 - **Prefer strong baselines over long baseline lists.** A short, credible comparison set is better than a padded one.
 - **Separate must-run from nice-to-have.** Do not let appendix ideas delay the core paper evidence.
 - **Reuse proposal constraints.** Do not invent unrealistic budgets or data assumptions.

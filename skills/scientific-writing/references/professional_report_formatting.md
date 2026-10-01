@@ -60,7 +60,8 @@ decorative visual simply to make a report appear complete.
 
 ## References and declarations
 
-References must render from verified metadata. After conversion, inspect identifier
+Final references must render from verified metadata. Internal drafts may retain located
+source IDs and explicit pending human review. After conversion, inspect identifier
 links, special characters, author order, and citation order.
 
 Declarations must come from validated records. A style template must never supply a

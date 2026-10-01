@@ -1,33 +1,33 @@
 # Statistical Test Selection Guide
 
-This guide provides a decision tree for selecting appropriate statistical tests based on research questions, data types, and study designs.
+Choose the estimand and independent unit before using this guide. Pairing, clustering, repeated measures, the outcome scale, and the model assumptions determine the eligible analyses. A normality-test p-value alone does not choose a test; changing to ranks or transforming an outcome can change the scientific target.
 
 ## Decision Tree for Test Selection
 
 ### 1. Comparing Groups
 
 #### Two Independent Groups
-- **Continuous outcome, normally distributed**: Independent samples t-test
-- **Continuous outcome, non-normal**: Mann-Whitney U test (Wilcoxon rank-sum test)
+- **Mean contrast**: Consider Welch's t-test; use a pooled-variance Student test only with a justified common-variance model. Assess distribution and influential observations for the intended inference.
+- **Rank/distribution contrast**: Mann-Whitney U test (Wilcoxon rank-sum). Its null concerns the underlying distributions; a location or median interpretation needs additional assumptions.
 - **Binary outcome**: Chi-square test or Fisher's exact test (if expected counts < 5)
 - **Ordinal outcome**: Mann-Whitney U test
 
 #### Two Paired/Dependent Groups
-- **Continuous outcome, normally distributed**: Paired t-test
-- **Continuous outcome, non-normal**: Wilcoxon signed-rank test
+- **Mean of within-pair differences**: Paired t-test; assess differences, not the two marginal distributions.
+- **Signed-rank contrast**: Wilcoxon signed-rank test; assess symmetry of differences and specify treatment of zeros and ties.
 - **Binary outcome**: McNemar's test
-- **Ordinal outcome**: Wilcoxon signed-rank test
+- **Ordinal outcome**: Choose an analysis justified for the paired scale and the meaning of differences; signed ranks require meaningful differences and their assumptions.
 
 #### Three or More Independent Groups
-- **Continuous outcome, normally distributed, equal variances**: One-way ANOVA
-- **Continuous outcome, normally distributed, unequal variances**: Welch's ANOVA
-- **Continuous outcome, non-normal**: Kruskal-Wallis H test
+- **Mean contrasts, justified equal variances**: One-way ANOVA
+- **Mean contrasts, unequal variances**: Welch's ANOVA
+- **Rank contrasts**: Kruskal-Wallis H test; state the target and assumptions needed for interpretation.
 - **Binary/categorical outcome**: Chi-square test
 - **Ordinal outcome**: Kruskal-Wallis H test
 
 #### Three or More Paired/Dependent Groups
-- **Continuous outcome, normally distributed**: Repeated measures ANOVA
-- **Continuous outcome, non-normal**: Friedman test
+- **Mean contrasts**: Repeated measures ANOVA or a mixed model that reflects the dependence and missingness pattern.
+- **Complete-block rank contrasts**: Friedman test
 - **Binary outcome**: Cochran's Q test
 
 #### Multiple Factors (Factorial Designs)
@@ -39,7 +39,7 @@ This guide provides a decision tree for selecting appropriate statistical tests 
 
 #### Two Continuous Variables
 - **Linear relationship, bivariate normal**: Pearson correlation
-- **Monotonic relationship or non-normal**: Spearman rank correlation
+- **Monotonic rank association**: Spearman rank correlation; this estimates a different association from Pearson's linear correlation.
 - **Rank-based data**: Spearman or Kendall's tau
 
 #### One Continuous Outcome, One or More Predictors
@@ -97,13 +97,15 @@ Any of the above tests can be performed using Bayesian methods:
 - Provides probability of hypotheses given data
 - Naturally incorporates prior information
 - Provides credible intervals instead of confidence intervals
-- No p-value interpretation issues
+- Requires justified likelihoods and priors, suitable diagnostics, and careful interpretation of posterior quantities; it does not remove design or inference problems.
 
 ## Key Considerations
 
 ### Sample Size
-- Small samples (n < 30): Consider non-parametric tests or exact methods
-- Very large samples: Even small effects may be statistically significant; focus on effect sizes
+- Justify sample size or precision using the intended contrast, independent units, plausible variation or effect scenarios, and the design. There is no universal `n = 30` eligibility rule.
+- For small samples, evaluate whether a model, exact procedure, or resampling method has defensible assumptions; rank tests and bootstraps are not automatically valid substitutes.
+- Distinguish repeated measurements or model seeds from independent sampling units.
+- Report effect estimates and uncertainty at any sample size.
 
 ### Multiple Comparisons
 - When conducting multiple tests, adjust for multiple comparisons using:
@@ -116,7 +118,7 @@ Any of the above tests can be performed using Bayesian methods:
 - Complete case analysis (listwise deletion)
 - Multiple imputation
 - Maximum likelihood methods
-- Ensure missing data mechanism is understood (MCAR, MAR, MNAR)
+- State the missingness assumptions (MCAR, MAR, MNAR), investigate available evidence, and assess sensitivity; an observed-data diagnostic does not establish the mechanism.
 
 ### Effect Sizes
 - Always report effect sizes alongside p-values
@@ -127,3 +129,7 @@ Any of the above tests can be performed using Bayesian methods:
 - Observational studies: Consider confounding and use regression/matching
 - Clustered/nested data: Use mixed-effects models or GEE
 - Time series: Use time series methods (ARIMA, etc.)
+
+## Sources for the distinctions above
+
+Checked 2026-10-01: official SciPy documentation for [Welch's t-test](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html), [Mann-Whitney U](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mannwhitneyu.html), and [Wilcoxon signed-rank](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html); [ASA statement on p-values](https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf). These sources support the test-null and p-value distinctions; sample-size choices still need a task-specific design rationale.

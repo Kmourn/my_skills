@@ -1,7 +1,9 @@
 # Optional Figures and Tables
 
-Figures and tables are optional. Include a display only when it communicates verified
-evidence more clearly than prose and the target venue permits it. This skill does not
+Figures and tables are optional. Include a display only when it communicates recorded
+evidence more clearly than prose and the target venue permits it. An authorized internal
+draft may use actual local results with claim-linked pending human review; verify the
+evidence before treating the display as final. This skill does not
 generate images, schematics, graphical abstracts, or synthetic scientific visuals.
 
 ## Provenance gate

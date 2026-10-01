@@ -1,0 +1,4 @@
+interface:
+  display_name: "Peer Review"
+  short_description: "Evidence-driven formal and internal manuscript reviews"
+  default_prompt: "Use $peer-review to prepare a constructive evidence-driven manuscript review and state its verification limits."

@@ -21,11 +21,14 @@
 
 - [research-cycle](skills/research-cycle/SKILL.md)：科研全流程协作。
 - [paper-lookup](skills/paper-lookup/SKILL.md)：论文检索与来源核对。
+- [literature-review](skills/literature-review/SKILL.md)：技术综述、方法比较与证据空白梳理。
 - [hypothesis-generation](skills/hypothesis-generation/SKILL.md)：假说生成。
 - [experiment-plan](skills/experiment-plan/SKILL.md)：软件实验规划。
 - [experimental-design](skills/experimental-design/SKILL.md)：随机化、分块与因子实验设计。
+- [research-code-style](skills/research-code-style/SKILL.md)：短小直白、参数可见且便于修改复跑的科研代码。
 - [exploratory-data-analysis](skills/exploratory-data-analysis/SKILL.md)、[statistical-analysis](skills/statistical-analysis/SKILL.md)（按需）：数据探索与统计分析。
 - [scientific-critical-thinking](skills/scientific-critical-thinking/SKILL.md)：研究方法与结论复核。
+- [peer-review](skills/peer-review/SKILL.md)：正式审稿与内部预审报告。
 
 ## 写作
 

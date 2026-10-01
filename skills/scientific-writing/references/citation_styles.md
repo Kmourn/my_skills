@@ -2,7 +2,9 @@
 
 ## Verification before style
 
-Formatting cannot repair an unverified reference. For every cited source:
+Formatting cannot repair an unverified reference. Internal drafts may retain source IDs
+from recorded material with explicit pending human review. Complete the following for
+every source before treating its citation as final:
 
 1. Open the source or authoritative bibliographic record.
 2. Confirm the cited proposition at a precise locator.
@@ -50,7 +52,8 @@ Supported local checks include:
 - HTTP or HTTPS URL shape;
 - duplicate normalized titles and identifiers.
 
-After the local check, a human must compare each identifier with the opened source.
+Before final reference approval, a human must compare each identifier with the opened
+source; an internal draft keeps that review pending rather than inventing metadata.
 
 ## NLM and journal styles
 
@@ -62,7 +65,8 @@ examples.
 For APA, AMA, Chicago, IEEE, ACS, Vancouver-derived, or publisher-specific styles:
 
 - use the current official manual or journal style;
-- render from verified structured metadata;
+- render final references from verified structured metadata; keep source IDs and pending
+  review explicit in internal drafts;
 - check author truncation, title case, journal abbreviation, version, date, locator,
   and identifier rules;
 - inspect the rendered list manually after conversion.

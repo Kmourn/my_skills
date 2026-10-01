@@ -45,18 +45,23 @@ def check_normality(
     data = np.asarray(data)
     data_clean = data[~np.isnan(data)]
 
-    # Shapiro-Wilk test
-    statistic, p_value = stats.shapiro(data_clean)
-
-    # Interpretation
-    is_normal = p_value > alpha
-    interpretation = (
-        f"Data {'appear' if is_normal else 'do not appear'} normally distributed "
-        f"(W = {statistic:.3f}, p = {p_value:.3f})"
-    )
+    # A non-rejection is a diagnostic result, not proof of normality.
+    if len(data_clean) >= 3 and np.isfinite(data_clean).all() and np.ptp(data_clean) > 0:
+        statistic, p_value = stats.shapiro(data_clean)
+    else:
+        statistic, p_value = np.nan, np.nan
+    normality_rejected = bool(p_value <= alpha) if np.isfinite(p_value) else None
+    if normality_rejected is None:
+        interpretation = "Shapiro-Wilk result undetermined: requires at least three finite, nonconstant observations."
+    else:
+        decision = "rejected" if normality_rejected else "not rejected"
+        interpretation = (
+            f"Shapiro-Wilk normality null {decision} "
+            f"(W = {statistic:.3f}, p = {p_value:.3f}); non-rejection does not establish normality."
+        )
 
     # Visual checks
-    if plot:
+    if plot and data_clean.size and np.isfinite(data_clean).all():
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
         # Q-Q plot
@@ -68,7 +73,8 @@ def check_normality(
         ax2.hist(data_clean, bins='auto', density=True, alpha=0.7, color='steelblue', edgecolor='black')
         mu, sigma = data_clean.mean(), data_clean.std()
         x = np.linspace(data_clean.min(), data_clean.max(), 100)
-        ax2.plot(x, stats.norm.pdf(x, mu, sigma), 'r-', linewidth=2, label='Normal curve')
+        if sigma > 0:
+            ax2.plot(x, stats.norm.pdf(x, mu, sigma), 'r-', linewidth=2, label='Normal curve')
         ax2.set_xlabel('Value')
         ax2.set_ylabel('Density')
         ax2.set_title(f'Histogram: {name}')
@@ -82,12 +88,13 @@ def check_normality(
         'test': 'Shapiro-Wilk',
         'statistic': statistic,
         'p_value': p_value,
-        'is_normal': is_normal,
+        'normality_rejected': normality_rejected,
         'interpretation': interpretation,
         'n': len(data_clean),
         'recommendation': (
-            "Proceed with parametric test" if is_normal
-            else "Consider non-parametric alternative or transformation"
+            "Assess the design, estimand, Q-Q plot, tails, and influential observations. "
+            "For paired means inspect differences; for regression inspect residuals. "
+            "Do not replace an analysis solely because of this diagnostic p-value."
         )
     }
 
@@ -131,14 +138,18 @@ def check_normality_per_group(
 
     for idx, group in enumerate(groups):
         group_data = data[data[group_col] == group][value_col].dropna()
-        stat, p = stats.shapiro(group_data)
+        diagnostic = check_normality(group_data, plot=False, alpha=alpha)
+        rejected = diagnostic['normality_rejected']
 
         results.append({
             'Group': group,
             'N': len(group_data),
-            'W': stat,
-            'p-value': p,
-            'Normal': 'Yes' if p > alpha else 'No'
+            'W': diagnostic['statistic'],
+            'p-value': diagnostic['p_value'],
+            'Normality decision': (
+                'Undetermined' if rejected is None
+                else ('Rejected' if rejected else 'Not rejected')
+            )
         })
 
         if plot:
@@ -181,20 +192,34 @@ def check_homogeneity_of_variance(
     dict
         Results including test statistic, p-value, and interpretation
     """
-    groups = [group[value_col].values for name, group in data.groupby(group_col)]
+    grouped = list(data.groupby(group_col))
+    group_names = [name for name, group in grouped]
+    groups = [group[value_col].dropna().values for name, group in grouped]
 
     # Levene's test (robust to non-normality)
-    statistic, p_value = stats.levene(*groups)
+    if len(groups) >= 2 and all(len(g) >= 2 and np.isfinite(g).all() for g in groups):
+        statistic, p_value = stats.levene(*groups)
+    else:
+        statistic, p_value = np.nan, np.nan
 
     # Variance ratio (max/min)
-    variances = [np.var(g, ddof=1) for g in groups]
-    var_ratio = max(variances) / min(variances)
+    variances = [np.var(g, ddof=1) if len(g) >= 2 else np.nan for g in groups]
+    if variances and np.isfinite(variances).all():
+        smallest, largest = min(variances), max(variances)
+        var_ratio = largest / smallest if smallest > 0 else (np.inf if largest > 0 else np.nan)
+    else:
+        var_ratio = np.nan
 
-    is_homogeneous = p_value > alpha
-    interpretation = (
-        f"Variances {'appear' if is_homogeneous else 'do not appear'} homogeneous "
-        f"(F = {statistic:.3f}, p = {p_value:.3f}, variance ratio = {var_ratio:.2f})"
-    )
+    equal_variance_rejected = bool(p_value <= alpha) if np.isfinite(p_value) else None
+    if equal_variance_rejected is None:
+        interpretation = "Levene result undetermined; equal variance has not been established."
+    else:
+        decision = "rejected" if equal_variance_rejected else "not rejected"
+        interpretation = (
+            f"Levene equal-variance null {decision} "
+            f"(F = {statistic:.3f}, p = {p_value:.3f}, variance ratio = {var_ratio:.2f}); "
+            "non-rejection does not establish equal variance."
+        )
 
     if plot:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
@@ -208,7 +233,6 @@ def check_homogeneity_of_variance(
         plt.xticks(rotation=45)
 
         # Variance plot
-        group_names = data[group_col].unique()
         ax2.bar(range(len(variances)), variances, color='steelblue', edgecolor='black')
         ax2.set_xticks(range(len(variances)))
         ax2.set_xticklabels(group_names, rotation=45)
@@ -223,12 +247,12 @@ def check_homogeneity_of_variance(
         'test': 'Levene',
         'statistic': statistic,
         'p_value': p_value,
-        'is_homogeneous': is_homogeneous,
+        'equal_variance_rejected': equal_variance_rejected,
         'variance_ratio': var_ratio,
         'interpretation': interpretation,
         'recommendation': (
-            "Proceed with standard test" if is_homogeneous
-            else "Consider Welch's correction or transformation"
+            "Assess the design and estimand; do not choose a pooled-variance test solely "
+            "from this p-value. Welch's test can address unequal variances for independent mean contrasts."
         )
     }
 
@@ -523,10 +547,13 @@ def comprehensive_assumption_check(
     data: pd.DataFrame,
     value_col: str,
     group_col: Optional[str] = None,
-    alpha: float = 0.05
+    alpha: float = 0.05,
+    plot: bool = True
 ) -> Dict:
     """
-    Perform comprehensive assumption checking for common statistical tests.
+    Summarize distribution, variance, and outlier diagnostics without choosing a test.
+
+    Independence, pairing, and model-specific assumptions require design assessment.
 
     Parameters
     ----------
@@ -538,6 +565,8 @@ def comprehensive_assumption_check(
         Column name for grouping variable (if applicable)
     alpha : float
         Significance level
+    plot : bool
+        Whether to display diagnostic figures
 
     Returns
     -------
@@ -557,7 +586,7 @@ def comprehensive_assumption_check(
         data[value_col].dropna(),
         name=value_col,
         method='iqr',
-        plot=True
+        plot=plot
     )
     results['outliers'] = outlier_results
     print(f"   {outlier_results['interpretation']}")
@@ -569,21 +598,16 @@ def comprehensive_assumption_check(
         print(f"\n2. NORMALITY CHECK (by {group_col})")
         print("-" * 70)
         normality_results = check_normality_per_group(
-            data, value_col, group_col, alpha=alpha, plot=True
+            data, value_col, group_col, alpha=alpha, plot=plot
         )
         results['normality_per_group'] = normality_results
         print(normality_results.to_string(index=False))
-
-        all_normal = normality_results['Normal'].eq('Yes').all()
-        print(f"\n   All groups normal: {'Yes' if all_normal else 'No'}")
-        if not all_normal:
-            print("   → Consider non-parametric alternative (Mann-Whitney, Kruskal-Wallis)")
 
         # Homogeneity of variance
         print(f"\n3. HOMOGENEITY OF VARIANCE")
         print("-" * 70)
         homogeneity_results = check_homogeneity_of_variance(
-            data, value_col, group_col, alpha=alpha, plot=True
+            data, value_col, group_col, alpha=alpha, plot=plot
         )
         results['homogeneity'] = homogeneity_results
         print(f"   {homogeneity_results['interpretation']}")
@@ -597,7 +621,7 @@ def comprehensive_assumption_check(
             data[value_col].dropna(),
             name=value_col,
             alpha=alpha,
-            plot=True
+            plot=plot
         )
         results['normality'] = normality_results
         print(f"   {normality_results['interpretation']}")
@@ -608,22 +632,9 @@ def comprehensive_assumption_check(
     print("SUMMARY")
     print("=" * 70)
 
-    if group_col is not None:
-        all_normal = results.get('normality_per_group', pd.DataFrame()).get('Normal', pd.Series()).eq('Yes').all()
-        is_homogeneous = results.get('homogeneity', {}).get('is_homogeneous', False)
-
-        if all_normal and is_homogeneous:
-            print("✓ All assumptions met. Proceed with parametric test (t-test, ANOVA).")
-        elif not all_normal:
-            print("✗ Normality violated. Use non-parametric alternative.")
-        elif not is_homogeneous:
-            print("✗ Homogeneity violated. Use Welch's correction or transformation.")
-    else:
-        is_normal = results.get('normality', {}).get('is_normal', False)
-        if is_normal:
-            print("✓ Normality assumption met.")
-        else:
-            print("✗ Normality violated. Consider transformation or non-parametric method.")
+    print("These diagnostics do not certify all assumptions or select an analysis.")
+    print("Assess independence, pairing, the estimand, and relevant differences or residuals.")
+    print("Non-rejection does not establish an assumption; document justified analysis changes.")
 
     print("=" * 70)
 
