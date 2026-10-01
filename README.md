@@ -2,6 +2,8 @@
 
 [AGENTS.md](codex/AGENTS.md) · [来源、适配与候选调研](SOURCES.md)
 
+2026-10-01：`pdf` 与 `experimental-design` 已完成适配、检查、GitHub 子分支推送及本地 Codex 同步；实际检查范围见 [引入记录](SOURCES.md#本轮引入与检查)。
+
 ## 通用
 
 - [稳健推进](skills/steady-progress/SKILL.md)：任务推进、阶段确认、按需委派与 high／max 指派。
