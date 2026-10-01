@@ -41,7 +41,7 @@ python3 -I "<installed-skill-dir>/scripts/planning.py" unbind --session "<hook-s
 
 需要隔离试用时可用 `--registry "<home-cache>/bindings"`；生成模板、配置、绑定与 hook 调用都要选同一目录。自定义目录不要求改变 HOME 或 CODEX_HOME。子进程里 `export PLAN_ID=...` 或运行 `select` 不会改变已经运行的 IDE 父进程环境。
 
-会话创建后的绑定无法补发已经结束的首次 SessionStart；后续 UserPromptSubmit 或同 ID 的续接事件才会读取绑定。
+绑定无法补发已经结束的 SessionStart；这时由后续 UserPromptSubmit 或同 ID 的续接事件读取绑定。`thread/start` 返回 ID 不代表 SessionStart 已完成：本机 0.159.2 app-server 的新线程在首条用户消息前尚未落盘，不能先等待启动事件、重启并 resume；验收时先按返回 ID 绑定，再提交首条消息并收集两个事件。
 
 ## 生成与幂等合并
 
@@ -69,7 +69,7 @@ python3 -I "<installed-skill-dir>/scripts/planning.py" configure-hooks --hooks-f
 
 本版本可从用户 `hooks.json`、可信项目的 `.codex/hooks.json` 或 inline `[hooks]` 发现配置；先查已有配置，选择一处集成，避免重复注入。`configure-hooks` 不修改 `config.toml` 或授予信任。新定义或定义变化通过客户端正常 `/hooks` 或 Hooks 设置审阅并信任；不生成 `trusted_hash`，不使用 bypass。[OpenAI Hooks 文档](https://learn.chatgpt.com/docs/hooks)
 
-实际验收须在支持本地 command hooks 的客户端确认来源路径、事件、完整命令与信任状态，再用两条分别绑定的合成会话核对选定记录标记及 hook 完成结果。协议、helper 或原生 CLI 的通过不能证明另一条云编排线程已注入。
+实际验收须在支持本地 command hooks 的客户端确认来源路径、事件、完整命令与信任状态，再用两条分别绑定的合成会话核对选定记录标记及 hook 的 started/completed 配对。本机 0.159.2 的两条新线程按上述首消息顺序验收通过：模型各自返回独有标记、无工具调用、记录未改，结束后解绑。此次没有运行真实 resume/compact，也不能据此证明另一条 IDE／云编排线程已注入。
 
 ## 离线协议试用
 
