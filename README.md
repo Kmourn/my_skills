@@ -6,22 +6,22 @@ Codex 全局指令备份见 [codex/AGENTS.md](codex/AGENTS.md)，部署到当前
 
 ## 协作框架
 
-首次任务确认场景（工程、科研、汇报）和模式（成长、穷举、爆破）；后续任务沿用已确认且仍适用的选择。默认由当前智能体直接完成工作，需要独立工作或独立判断时再提出团队分工。短任务形成成果后直接交接，长阶段按需商定排程。
+首次任务确认场景（工程、科研、汇报）和模式（成长、穷举、爆破）；后续任务沿用已确认且仍适用的选择。委派边界一次约定后，由 AI 根据独立工作或独立判断的价值按需派发，小任务直接完成。短任务形成成果后直接交接，长阶段按需商定排程。
 
 | 机制 | 当前规则 | 详细说明 |
 | --- | --- | --- |
-| 记忆 | 项目记录支持续接；长期偏好按明确保存意图维护；原生记忆可选 | [记忆与续接](skills/scene-mode-collaboration/references/memory.md) |
-| 子智能体 | 按明确派发请求或已选团队分工启用，约定范围并回收真实结果 | [子智能体派发与回收](skills/scene-mode-collaboration/references/subagents.md) |
-| 思考强度 | 沿用用户配置；子智能体默认继承，按需明确覆盖并核对生效 | [思考强度](skills/scene-mode-collaboration/references/reasoning.md) |
+| 记忆与 Skill 沉淀 | 个人偏好和可复用方法积累为候选，大段工作结束后统一确认再保存；通用经验优先更新稳健 Skill | [记忆与沉淀](skills/steady-progress/references/memory.md) |
+| 子智能体 | 一次约定后按需委派，明确接口与写入范围，主线程统一回收、集成和交付 | [子智能体派发与回收](skills/steady-progress/references/subagents.md) |
+| 思考强度 | 同一批同类任务：一名执行者 `max`，多名并行执行者各 `high`；不同类分别计数 | [high／max 指派规则](skills/steady-progress/references/reasoning.md) |
 
-三项机制由现有 `scene-mode-collaboration` 按需加载。安装这些规则不会自动启用 Codex 原生记忆、创建子智能体或改变模型与思考强度；可选配置示例见相应说明。
+三项通用机制统一维护在 `steady-progress`，由场景 Skill 引用。个人偏好文件在首次具体条目获确认后建立；原生自动生成不代替确认流程。思考强度由实际调用或派发设置，本机主智能体现有 `max` 配置保留，安装规则不冒充已在运行时自动调参。
 
 维护顺序：**修改本仓库 → 检查 → 提交并通过 SSH 推送 GitHub 子分支 → 同步本地 Codex**。推送成功后，按改动范围将 `codex/AGENTS.md` 和有关 `skills/<名称>/` 内容复制到实际 Codex 主目录的对应位置，备份被替换的文件并核对内容一致。重新加载后生效的指令在新会话中核对。个人记忆与运行状态留在本地。
 
 ## 通用
 
-- [稳健推进](skills/steady-progress/SKILL.md)：测试请示、服务器修改边界与阶段代码推送。
-- [场景与模式协作](skills/scene-mode-collaboration/SKILL.md)：按任务规模组织分工、Skill 与交接，按需管理记忆续接、子智能体和思考强度。
+- [稳健推进](skills/steady-progress/SKILL.md)：测试与写入边界、阶段推送、记忆与 Skill 确认、按需委派及 high／max 指派。
+- [场景与模式协作](skills/scene-mode-collaboration/SKILL.md)：按场景、模式和任务规模组织工作功能、Skill 与人机交接。
 - [grill-me](skills/grill-me/SKILL.md) 与依赖 [grilling](skills/grilling/SKILL.md)：AI 主导追问。
 
 ## 工程

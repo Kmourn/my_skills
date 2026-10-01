@@ -1,5 +1,5 @@
 interface:
   display_name: "稳健推进"
-  short_description: "人工优先测试、服务器主目录内修改与 SSH 阶段代码推送"
+  short_description: "主目录内稳健推进，阶段末确认记忆与 Skill，并按执行人数指派 high/max"
 policy:
   allow_implicit_invocation: true
