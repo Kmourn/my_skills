@@ -33,15 +33,22 @@ class PlanningCli(unittest.TestCase):
         self.project = self.root / "project"
         self.project.mkdir()
         self.env = os.environ.copy()
-        for key in ("PLAN_ID", "PWF_RECORD", "PWF_PLAN_ROOT", "CODEX_HOME"):
+        for key in ("PLAN_ID", "PWF_RECORD", "PWF_PLAN_ROOT", "CODEX_SESSION_ID", "CODEX_THREAD_ID"):
             self.env.pop(key, None)
+        self.registry = self.root / "registry"
+        self.hooks_file = self.root / "configuration" / "hooks.json"
         self.env["PYTHONDONTWRITEBYTECODE"] = "1"
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def run_cli(self, *args, payload=None, env=None, cwd=None, expected=0):
-        result = subprocess.run([sys.executable, "-I", str(SCRIPT), *map(str, args)],
+    def run_cli(self, *args, payload=None, env=None, cwd=None, expected=0, script=None):
+        arguments = list(map(str, args))
+        if arguments[0] in {"bind", "unbind", "hook", "hooks-template", "configure-hooks"} and "--registry" not in arguments:
+            arguments += ["--registry", str(self.registry)]
+        if arguments[0] == "configure-hooks" and "--hooks-file" not in arguments:
+            arguments += ["--hooks-file", str(self.hooks_file)]
+        result = subprocess.run([sys.executable, "-I", str(script or SCRIPT), *arguments],
                                 input=json.dumps(payload) if isinstance(payload, dict) else payload,
                                 cwd=cwd or self.project, env=env or self.env,
                                 text=True, capture_output=True, timeout=5)
@@ -53,6 +60,21 @@ class PlanningCli(unittest.TestCase):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text, encoding="utf-8")
         return target
+
+    def event(self, session="session-A", name="UserPromptSubmit", **extra):
+        return {"cwd": str(self.project), "hook_event_name": name, "session_id": session,
+                "model": "synthetic", "permission_mode": "default",
+                "transcript_path": str(self.project / "transcript-sentinel.jsonl"),
+                "prompt": "Do not use prompt-sentinel as planning state", "turn_id": "synthetic-turn", **extra}
+
+    def snapshot(self):
+        return {str(path.relative_to(self.root)): (path.read_bytes(), path.stat().st_mtime_ns)
+                for path in self.root.rglob("*") if path.is_file()}
+
+    def assert_quiet_hook(self, *args, payload=None, env=None):
+        result = self.run_cli("hook", *args, payload=payload or self.event(), env=env)
+        self.assertEqual((result.stdout, result.stderr), ("", ""))
+        return result
 
     def test_init_is_idempotent_and_creates_only_one_record(self):
         first = json.loads(self.run_cli("init", "--task", "alpha", "--title", "API change").stdout)
@@ -129,16 +151,18 @@ class PlanningCli(unittest.TestCase):
 
     def test_paths_resolve_codex_home_without_expanding_write_boundary(self):
         real_home = Path(pwd.getpwuid(os.getuid()).pw_dir).resolve()
-        relative = self.root.relative_to(real_home) / "codex-other"
-        env = self.env | {"HOME": str(self.root), "CODEX_HOME": "~/" + str(relative)}
-        result = json.loads(self.run_cli("paths", env=env).stdout)
+        before = self.snapshot()
+        result = json.loads(self.run_cli("paths").stdout)
         self.assertEqual(result["real_home"], str(real_home))
-        self.assertEqual(result["codex_home"], str(real_home / relative))
-        external = json.loads(self.run_cli("paths", env=env | {"CODEX_HOME": "/var/lib/codex"}).stdout)
-        self.assertFalse(external["codex_home_within_write_boundary"])
-        default = json.loads(self.run_cli("paths", env=env | {"CODEX_HOME": ""}).stdout)
-        self.assertEqual(default["codex_home"], str(real_home / ".codex"))
-        self.assertFalse((real_home / relative).exists())
+        value = os.path.expandvars(self.env.get("CODEX_HOME", "").strip() or str(real_home / ".codex"))
+        if value == "~" or value.startswith("~/"):
+            value = str(real_home) + value[1:]
+        expected = Path(value)
+        expected = expected.resolve() if expected.is_absolute() else (self.project / expected).resolve()
+        self.assertEqual(result["codex_home"], str(expected))
+        self.assertEqual(result["codex_home_within_write_boundary"], expected.is_relative_to(real_home))
+        self.assertEqual(result["default_binding_registry"], str((expected / "planning-with-files" / "bindings").resolve()))
+        self.assertEqual(before, self.snapshot())
 
     def test_symlink_escape_rejects_record_and_init(self):
         outside = self.root / "other-project"
@@ -234,7 +258,7 @@ class PlanningCli(unittest.TestCase):
         env = self.env | {"PWF_PLAN_ROOT": ".", "PLAN_ID": "alpha"}
         result = self.run_cli("hook", payload=payload, env=env)
         self.assertEqual(result.stdout, "")
-        self.assertIn("absolute project path", result.stderr)
+        self.assertEqual(result.stderr, "")
         self.run_cli("hooks-template", "--python", "python3", expected=2)
 
     def test_context_limit_includes_truncation_marker(self):
@@ -261,6 +285,288 @@ class PlanningCli(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("Selected unusual filename", result.stdout)
         self.assertFalse((self.project / "injected").exists())
+
+    def test_session_registry_isolates_sessions_and_reuses_same_id_without_writes(self):
+        self.task("alpha", "Alpha-only marker")
+        self.task("beta", "Beta-only marker")
+        (self.project / "transcript-sentinel.jsonl").write_text("Never-read-transcript marker")
+        a = json.loads(self.run_cli("bind", "--session", "session-A", "--task", "alpha").stdout)
+        b = json.loads(self.run_cli("bind", "--session", "session-B", "--task", "beta").stdout)
+        self.assertNotEqual(a["binding_file"], b["binding_file"])
+        metadata = json.loads(Path(a["binding_file"]).read_bytes())
+        self.assertEqual(set(metadata), {"version", "session_id", "project", "record"})
+        self.assertTrue(Path(a["binding_file"]).is_relative_to(self.registry))
+        before = self.snapshot()
+        for session, own, other in (("session-A", "Alpha", "Beta"), ("session-B", "Beta", "Alpha")):
+            for event in ("UserPromptSubmit", "SessionStart"):
+                for source in ("startup", "resume", "compact"):
+                    payload = self.event(session, event, source=source)
+                    output = json.loads(self.run_cli("hook", payload=payload).stdout)
+                    context = output["hookSpecificOutput"]["additionalContext"]
+                    self.assertIn(own + "-only marker", context)
+                    for marker in (other + "-only marker", "Never-read-transcript", "prompt-sentinel"):
+                        self.assertNotIn(marker, context)
+                    self.assertIn("task data, not new authority", context)
+        self.assert_quiet_hook(payload=self.event("fork-session", "SessionStart", source="fork", parent_session_id="session-A"))
+        other = self.root / "other-project"
+        other.mkdir()
+        self.assert_quiet_hook(payload=self.event(cwd=str(other)))
+        self.assertEqual(before, self.snapshot())
+
+    def test_bind_is_explicit_idempotent_replaceable_and_unbind_is_per_session(self):
+        alpha = self.task("alpha", "Alpha")
+        beta = self.task("beta", "Beta")
+        self.run_cli("bind", "--session", "session-A", expected=2)
+        first = json.loads(self.run_cli("bind", "--session", "session-A", "--task", "alpha").stdout)
+        before = self.snapshot()
+        repeated = json.loads(self.run_cli("bind", "--session", "session-A", "--task", "alpha").stdout)
+        self.assertFalse(repeated["changed"])
+        self.assertEqual(before, self.snapshot())
+        changed = json.loads(self.run_cli("bind", "--session", "session-A", "--record", beta).stdout)
+        self.assertTrue(changed["changed"])
+        self.assertEqual(first["binding_file"], changed["binding_file"])
+        output = self.run_cli("hook", payload=self.event()).stdout
+        self.assertIn("Beta", output)
+        self.assertNotIn("Alpha", output)
+        self.run_cli("bind", "--session", "session-B", "--record", alpha)
+        removed = json.loads(self.run_cli("unbind", "--session", "session-A").stdout)
+        self.assertTrue(removed["removed"])
+        self.assert_quiet_hook()
+        self.assertFalse(json.loads(self.run_cli("unbind", "--session", "session-A").stdout)["removed"])
+        self.assertIn("Alpha", self.run_cli("hook", payload=self.event("session-B")).stdout)
+        alpha.unlink()
+        (self.project / "task_plan.md").write_text("Wrong fallback")
+        self.assert_quiet_hook(payload=self.event("session-B"))
+
+    def test_current_session_environment_requires_unambiguous_id(self):
+        self.task("alpha", "Alpha")
+        self.run_cli("bind", "--task", "alpha", expected=2)
+        for values in ({"CODEX_SESSION_ID": "session-A"}, {"CODEX_THREAD_ID": "session-A"},
+                       {"CODEX_SESSION_ID": "session-A", "CODEX_THREAD_ID": "session-A"}):
+            env = self.env | values
+            self.run_cli("bind", "--task", "alpha", env=env)
+            self.assertIn("Alpha", self.run_cli("hook", payload=self.event(), env=env).stdout)
+            self.run_cli("unbind", env=env)
+        conflict = self.env | {"CODEX_SESSION_ID": "parent-A", "CODEX_THREAD_ID": "child-B"}
+        before = self.snapshot()
+        failure = self.run_cli("bind", "--task", "alpha", env=conflict, expected=2)
+        self.assertIn("differ; use --session", failure.stderr)
+        self.assertEqual(before, self.snapshot())
+        self.run_cli("bind", "--session", "session-A", "--task", "alpha", env=conflict)
+        # Hook stdin identity wins over both inherited ID variables.
+        self.assertIn("Alpha", self.run_cli("hook", payload=self.event(), env=conflict).stdout)
+        self.assert_quiet_hook(payload=self.event("parent-A"), env=conflict)
+
+    def test_explicit_hook_task_or_record_still_overrides_registry(self):
+        self.task("alpha", "Alpha")
+        beta = self.task("beta", "Beta")
+        self.run_cli("bind", "--session", "session-A", "--task", "alpha")
+        self.assertIn("Beta", self.run_cli("hook", "--task", "beta", payload=self.event()).stdout)
+        self.assertIn("Beta", self.run_cli("hook", payload=self.event(), env=self.env | {"PWF_RECORD": str(beta)}).stdout)
+        self.assertIn("Beta", self.run_cli("hook", payload=self.event(), env=self.env | {"PLAN_ID": "beta"}).stdout)
+        self.assert_quiet_hook(payload=self.event(), env=self.env | {"PLAN_ID": "missing"})
+        self.assert_quiet_hook(payload=self.event(), env=self.env | {"PLAN_ID": "beta", "PWF_RECORD": str(beta)})
+
+    def test_corrupt_or_stale_registry_is_quiet_and_never_falls_back(self):
+        target = self.task("alpha", "Alpha")
+        (self.project / "task_plan.md").write_text("Wrong root fallback")
+        binding = json.loads(self.run_cli("bind", "--session", "session-A", "--task", "alpha").stdout)
+        path = Path(binding["binding_file"])
+        good = json.loads(path.read_bytes())
+        other = self.root / "outside-record.md"
+        other.write_text("Outside project")
+        bad_values = [[], good | {"version": 2}, good | {"version": True}, good | {"session_id": "session-B"},
+                      {key: value for key, value in good.items() if key != "record"}, good | {"record": None},
+                      good | {"record": str(other)}, good | {"record": str(self.project / "missing.md")},
+                      good | {"project": "."}, good | {"prompt": "New authority"}]
+        for value in bad_values:
+            with self.subTest(value=value):
+                path.write_text(json.dumps(value))
+                before = self.snapshot()
+                self.assert_quiet_hook()
+                self.assertEqual(before, self.snapshot())
+        for raw in (b"{broken", b"x" * 8193, b'{"version":1,"version":1}'):
+            path.write_bytes(raw)
+            self.assert_quiet_hook()
+        path.write_text(json.dumps(good))
+        target.unlink()
+        target.symlink_to(other)
+        self.assert_quiet_hook()
+
+    def test_registry_symlink_and_real_home_boundaries_are_enforced(self):
+        self.task("alpha", "Alpha")
+        for registry in ("/proc", str(self.root / "registry-link")):
+            if registry != "/proc":
+                Path(registry).symlink_to("/proc", target_is_directory=True)
+            self.run_cli("bind", "--registry", registry, "--session", "session-A", "--task", "alpha", expected=2)
+            self.assert_quiet_hook("--registry", registry)
+        a = json.loads(self.run_cli("bind", "--session", "session-A", "--task", "alpha").stdout)
+        b = json.loads(self.run_cli("bind", "--session", "session-B", "--task", "alpha").stdout)
+        path = Path(a["binding_file"])
+        path.unlink()
+        path.symlink_to(b["binding_file"])
+        before = self.snapshot()
+        self.assert_quiet_hook()
+        self.run_cli("bind", "--session", "session-A", "--task", "alpha", expected=2)
+        self.run_cli("unbind", "--session", "session-A", expected=2)
+        self.assertEqual(before, self.snapshot())
+
+    def test_registry_context_has_strict_cap_and_bad_hook_inputs_are_silent(self):
+        self.task("alpha", "Large selected content " * 10000)
+        self.run_cli("bind", "--session", "session-A", "--task", "alpha")
+        before = self.snapshot()
+        for budget in (512, 16000, 65536):
+            output = json.loads(self.run_cli("hook", "--max-chars", budget, payload=self.event()).stdout)
+            context = output["hookSpecificOutput"]["additionalContext"]
+            self.assertLessEqual(len(context), budget)
+            self.assertIn("Context truncated", context)
+        bad_payloads = ["{broken", "x" * 65537, "[]", self.event(session_id=None), self.event(session_id=""),
+                        self.event(session_id="bad id"), self.event(session_id="x" * 257),
+                        self.event(cwd="relative"), self.event(cwd=str(self.project) + "\0"), self.event(name="Stop")]
+        for payload in bad_payloads:
+            self.assert_quiet_hook(payload=payload)
+        for value in (511, 65537, "invalid"):
+            self.assert_quiet_hook("--max-chars", value)
+        for option in ("--task", "--record", "--registry"):
+            self.assert_quiet_hook(option, "")
+        self.run_cli("bind", "--session", "session-A", "--task", "", expected=2)
+        self.run_cli("hooks-template", "--record", "", expected=2)
+        self.assert_quiet_hook("--session", "session-A")
+        self.assertEqual(before, self.snapshot())
+        target = self.project / ".planning" / "alpha" / "task_plan.md"
+        target.write_bytes(b"x" * (4 * 1024 * 1024 + 1))
+        before = self.snapshot()
+        self.assert_quiet_hook()
+        self.assertEqual(before, self.snapshot())
+
+    def test_custom_registry_and_nested_cwd_respect_the_bound_project(self):
+        self.task("alpha", "Alpha")
+        registry = self.root / "explicit registry"
+        self.run_cli("bind", "--registry", registry, "--session", "session-A", "--task", "alpha")
+        self.assert_quiet_hook()
+        nested = self.project / "src"
+        nested.mkdir()
+        payload = self.event(cwd=str(nested))
+        self.assertIn("Alpha", self.run_cli("hook", "--registry", registry, payload=payload).stdout)
+        self.assertIn("Alpha", self.run_cli("hook", "--registry", registry, "--project", self.project, payload=payload).stdout)
+        other = self.root / "other-project"
+        other.mkdir()
+        self.assert_quiet_hook("--registry", registry, "--project", other, payload=payload)
+        fragment = json.loads(self.run_cli("hooks-template", "--registry", registry).stdout)
+        command = fragment["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"]
+        before = self.snapshot()
+        output = subprocess.run(["/bin/sh", "-c", command], input=json.dumps(payload), cwd=self.project,
+                                env=self.env, text=True, capture_output=True, timeout=5)
+        self.assertEqual(output.returncode, 0, output.stderr)
+        self.assertIn("Alpha", output.stdout)
+        self.assertEqual(before, self.snapshot())
+
+    def test_configure_hooks_merges_own_entries_backs_up_and_is_idempotent(self):
+        template = json.loads(self.run_cli("hooks-template", "--max-chars", 512).stdout)
+        own = template["hooks"]["SessionStart"][0]["hooks"][0]
+        third = {"type": "command", "command": "printf third-party", "timeout": 7, "custom": "keep"}
+        other_type = {"type": "prompt", "prompt": "Keep this provider's handler"}
+        original = {"extraConfig": {"preserve": True}, "hooks": {
+            "SessionStart": [{"hooks": [own, third]}, {"hooks": [own]}],
+            "UserPromptSubmit": [{"hooks": [other_type]}], "PostToolUse": [{"matcher": "Bash", "hooks": [third]}]}}
+        hooks = self.hooks_file
+        hooks.parent.mkdir(parents=True)
+        raw = json.dumps(original, ensure_ascii=False).encode("utf-8")
+        hooks.write_bytes(raw)
+        result = json.loads(self.run_cli("configure-hooks").stdout)
+        self.assertTrue(result["changed"])
+        self.assertEqual(Path(result["backup"]).read_bytes(), raw)
+        merged = json.loads(hooks.read_bytes())
+        self.assertEqual(merged["extraConfig"], original["extraConfig"])
+        self.assertEqual(merged["hooks"]["PostToolUse"], original["hooks"]["PostToolUse"])
+        self.assertEqual(merged["hooks"]["SessionStart"][0], {"hooks": [third]})
+        self.assertEqual(merged["hooks"]["UserPromptSubmit"][0], {"hooks": [other_type]})
+        for event in ("SessionStart", "UserPromptSubmit"):
+            self.assertEqual(merged["hooks"][event][-1]["hooks"][0]["additionalContextLimit"], 0)
+            self.assertEqual(sum(handler["type"] == "command" and "planning.py" in handler["command"]
+                                 for group in merged["hooks"][event] for handler in group["hooks"]), 1)
+        before = self.snapshot()
+        again = json.loads(self.run_cli("configure-hooks").stdout)
+        self.assertFalse(again["changed"])
+        self.assertIsNone(again["backup"])
+        self.assertEqual(before, self.snapshot())
+
+    def test_configure_uses_final_helper_path_and_only_removes_verified_copies(self):
+        installed = self.root / "installed skill" / "scripts" / "planning.py"
+        installed.parent.mkdir(parents=True)
+        installed.write_bytes(SCRIPT.read_bytes())
+        unrelated = self.root / "other" / "planning.py"
+        unrelated.parent.mkdir()
+        unrelated.write_text("print('Other package with same filename')\n")
+        template = json.loads(self.run_cli("hooks-template").stdout)
+        own = template["hooks"]["SessionStart"][0]["hooks"][0]
+        other = own | {"command": shlex.join([str(Path(sys.executable).resolve()), "-I", str(unrelated), "hook"])}
+        shell_wrapper = own | {"command": own["command"] + " ; printf wrapper"}
+        matched = {"matcher": "fork", "hooks": [own]}
+        hooks = self.hooks_file
+        hooks.parent.mkdir(parents=True)
+        hooks.write_text(json.dumps({"hooks": {"SessionStart": [{"hooks": [own, other, shell_wrapper]}, matched]}}))
+        result = json.loads(self.run_cli("configure-hooks", script=installed).stdout)
+        self.assertEqual(shlex.split(result["command"])[2], str(installed))
+        merged = json.loads(hooks.read_bytes())
+        self.assertEqual(merged["hooks"]["SessionStart"][0], {"hooks": [other, shell_wrapper]})
+        self.assertEqual(merged["hooks"]["SessionStart"][1], matched)
+        self.assertFalse(json.loads(self.run_cli("configure-hooks", script=installed).stdout)["changed"])
+        self.assertFalse((hooks.parent / "config.toml").exists())
+
+    def test_configure_rejects_unknown_or_duplicate_json_without_overwrite(self):
+        hooks = self.hooks_file
+        hooks.parent.mkdir(parents=True)
+        values = [[], {"hooks": []}, {"hooks": {"SessionStart": {}}},
+                  {"hooks": {"SessionStart": [{"hooks": [] , "unknownGroupField": True}]}},
+                  {"hooks": {"SessionStart": [{"hooks": [{"type": "command"}]}]}}]
+        for value in values:
+            hooks.write_text(json.dumps(value))
+            before = self.snapshot()
+            self.run_cli("configure-hooks", expected=2)
+            self.assertEqual(before, self.snapshot())
+        for raw in ('{broken', '{"hooks":{},"hooks":{}}'):
+            hooks.write_text(raw)
+            before = self.snapshot()
+            self.run_cli("configure-hooks", expected=2)
+            self.assertEqual(before, self.snapshot())
+
+    def test_configure_and_registry_cannot_write_outside_real_home(self):
+        self.task("alpha", "Alpha")
+        self.run_cli("configure-hooks", "--hooks-file", "/proc/version", expected=2)
+        self.run_cli("bind", "--registry", "/proc", "--session", "session-A", "--task", "alpha", expected=2)
+        self.assert_quiet_hook("--registry", "/proc")
+        self.hooks_file.parent.mkdir(parents=True)
+        self.hooks_file.symlink_to("/proc/version")
+        self.run_cli("configure-hooks", expected=2)
+        self.assertEqual(list(self.hooks_file.parent.iterdir()), [self.hooks_file])
+
+    def test_template_is_read_only_and_first_configuration_has_no_fake_trust(self):
+        before = self.snapshot()
+        self.run_cli("hooks-template")
+        self.assertEqual(before, self.snapshot())
+        result = json.loads(self.run_cli("configure-hooks").stdout)
+        self.assertTrue(result["changed"])
+        self.assertIsNone(result["backup"])
+        hooks = Path(result["hooks_file"])
+        self.assertEqual(list(hooks.parent.iterdir()), [hooks])
+        self.assertNotIn("trusted_hash", hooks.read_text())
+        self.assertEqual(set(json.loads(hooks.read_bytes())["hooks"]), {"SessionStart", "UserPromptSubmit"})
+
+    def test_explicit_hooks_file_is_isolated_and_resolves_home_contained_symlink(self):
+        target = self.root / "explicit-config" / "hooks.json"
+        result = json.loads(self.run_cli("configure-hooks", "--hooks-file", target).stdout)
+        self.assertEqual(result["hooks_file"], str(target))
+        self.assertFalse(self.hooks_file.parent.exists())
+        link = self.root / "linked-hooks.json"
+        link.symlink_to(target)
+        before = self.snapshot()
+        self.assertFalse(json.loads(self.run_cli("configure-hooks", "--hooks-file", link).stdout)["changed"])
+        self.assertEqual(before, self.snapshot())
+        self.assertTrue(link.is_symlink())
+        self.run_cli("configure-hooks", "--hooks-file", "/proc/version", expected=2)
+        self.run_cli("configure-hooks", "--hooks-file", "", expected=2)
+        self.run_cli("hooks-template", "--hooks-file", target, expected=2)
 
 
 if __name__ == "__main__":

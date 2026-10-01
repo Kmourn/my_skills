@@ -47,10 +47,14 @@ python3 -I "<skill-dir>/scripts/planning.py" init --project "<project>" --task a
 python3 -I "<skill-dir>/scripts/planning.py" status --project "<project>" --task api-migration
 ```
 
-选定方式、路径约束、证据 schema 和命令细节见 [references/helpers.md](references/helpers.md)。helper 无网络调用、不读取会话库、不运行 Markdown 中的命令；除显式 `init` 外不写文件。
+选定方式、路径约束、证据 schema 和命令细节见 [references/helpers.md](references/helpers.md)。helper 无网络调用、不读取会话库、不运行 Markdown 中的命令；仅显式 `init`、`bind` / `unbind` 与 `configure-hooks` 可在真实 HOME 内写文件。
 
 ## 可选自动注入与历史
 
-先核对实际客户端版本、事件、配置发现及输出协议，再决定是否使用 [references/hooks.md](references/hooks.md) 中的可选方案。安装 Skill 本身不启用 hooks。没有 hook 支持时直接读记录或调用 `print`；无需为普通任务安装 hook。
+先核对实际客户端的运行方式、版本、事件、配置发现及输出协议，再使用 [references/hooks.md](references/hooks.md) 中的可选方案。本地 command hooks 要求本地编排与本地执行。安装 Skill 本身不启用 hooks；首次配置按已有任务授权显式调用 `configure-hooks`，信任通过客户端正常审阅。
+
+已接入且可信的本地长任务，在确定对应记录后显式 `bind` 当前核实的会话 ID。同 ID 续接读取当下文件；fork 新 ID 要重新绑定；当前任务结束时 `unbind`，避免下一项任务继续注入旧记录。这些绑定与解绑属于已采用方案内的普通本地任务操作，不逐次增加审批。hook 只读查已有绑定，不借用父会话或其他任务。没有 hook 支持时直接读记录或调用 `print`。
+
+子智能体 hooks 使用父会话 ID；父映射由主控或指定责任成员 bind/unbind，子成员不自行覆盖或解除父映射。子任务记录仍按分工使用各自范围。
 
 磁盘记录续接与历史回放是两项独立功能。本包不默认读取、扫描或合并 Codex/其他客户端会话库，也未分发上游历史回放脚本。只有用户明确要求查阅历史时，才另行确定实际客户端存储与授权范围；可先使用用户指定的导出文件，历史片段作为待核对材料，不作为已完成证据。

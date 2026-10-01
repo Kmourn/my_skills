@@ -1,6 +1,6 @@
 # Skill 清单
 
-[AGENTS.md](codex/AGENTS.md) · [来源、适配与候选调研](SOURCES.md)
+[AGENTS.md](codex/AGENTS.md) · [来源与适配记录](SOURCES.md)
 
 ## 通用
 
@@ -8,7 +8,7 @@
 - [场景与模式协作](skills/scene-mode-collaboration/SKILL.md)：按场景与模式组织分工、Skill 和人机交接。
 - [grill-me](skills/grill-me/SKILL.md) 与依赖 [grilling](skills/grilling/SKILL.md)：AI 主导追问。
 - [pdf](skills/pdf/SKILL.md)：PDF 提取、生成与检查。
-- [planning-with-files](skills/planning-with-files/SKILL.md)：长任务规划、磁盘记录续接与任务隔离。
+- [planning-with-files](skills/planning-with-files/SKILL.md)：长任务记录、会话绑定与状态续接。
 - [reference-style-alignment](skills/reference-style-alignment/SKILL.md)：写作、图像、数据图和 PPT 的参考风格对齐。
 
 ## 工程
