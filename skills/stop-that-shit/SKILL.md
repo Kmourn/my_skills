@@ -1,6 +1,6 @@
 ---
 name: stop-that-shit
-description: 仅在用户针对当前任务明确点名 STS 或 Stop That Shit 时使用；控制推测性防护、范围膨胀与重复验证，不因普通开发任务自动启用。
+description: 在工程实现与验证中控制推测性防护、范围膨胀与重复验证，按实际任务需要选择直接、完整的解决方案。
 license: MIT
 ---
 

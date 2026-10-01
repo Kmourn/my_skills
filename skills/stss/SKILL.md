@@ -1,6 +1,6 @@
 ---
 name: stss
-description: 仅在用户针对当前任务明确点名 STSS 或 Stop That Shit Slop 时使用；精简方案与决策文稿中的防御性措辞，保留影响判断的事实和限制。
+description: 审查或改写方案与决策文稿，精简防御性措辞，保留影响判断的事实和限制。
 license: MIT
 ---
 

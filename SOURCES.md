@@ -4,8 +4,8 @@
 
 | 来源 | 本地 Skill | 许可证 | 本地适配 |
 | --- | --- | --- | --- |
-| 本地编写 | `scene-mode-collaboration`、`research-cycle` | 本仓库自有 | 按场景、模式和任务组织工作。 |
-| [lennney/stop-that-shit](https://github.com/lennney/stop-that-shit)（此前保存的本地副本） | `stop-that-shit`、`stss` | [MIT](licenses/stop-that-shit-LICENSE) | Codex 显式调用策略；仅在每任务人工点名时使用。未安装 Guard 或 Hook。 |
+| 本地编写 | `steady-progress`、`scene-mode-collaboration`、`research-cycle` | 本仓库自有 | 通用推进规则，以及按场景、模式和任务组织工作。 |
+| [lennney/stop-that-shit](https://github.com/lennney/stop-that-shit)（此前保存的本地副本） | `stop-that-shit`、`stss` | [MIT](licenses/stop-that-shit-LICENSE) | 按任务需要调用，允许自动选择。未安装 Guard 或 Hook。 |
 | [mattpocock/skills](https://github.com/mattpocock/skills) | `grill-me`、`grilling`、`improve-codebase-architecture` | [MIT](licenses/mattpocock-skills-LICENSE) | `grill-me` 改为读取已安装依赖；架构维护 Skill 去除未安装依赖、强制 HTML 报告和自动写入项目文档。 |
 | [tyshkovskii/reviewing-code-modularity-skill](https://github.com/tyshkovskii/reviewing-code-modularity-skill) | `reviewing-code-modularity-skill` | [MIT](skills/reviewing-code-modularity-skill/LICENSE) | 保留上游 Skill 正文。 |
 | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | `paper-lookup`、`hypothesis-generation`、`exploratory-data-analysis`、`statistical-analysis`、`scientific-visualization`、`scientific-writing`、`scientific-critical-thinking` | [MIT](licenses/K-Dense-scientific-agent-skills-LICENSE.md) | 假说 Skill 允许穷举模式下临时比较探索优先级，最终判断由人负责；批判性思维 Skill 去除未安装且可能另行计费的 OpenRouter 绘图入口。 |
