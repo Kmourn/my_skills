@@ -25,8 +25,7 @@ description: 当用户选定工程、科研或汇报场景及成长、穷举或�
 ## 按需读取运行规则
 
 - 继续已有任务、跨会话交接或沉淀偏好与方法时，读取 [稳健推进的记忆规则](../steady-progress/references/memory.md)。
-- 用户明确要求子智能体，或委派边界已经约定时，读取 [稳健推进的派发规则](../steady-progress/references/subagents.md)。
-- 指派或核对模型思考强度时，读取 [稳健推进的 high／max 规则](../steady-progress/references/reasoning.md)。
+- 按需委派或设置思考强度时，读取 [稳健推进的派发与强度规则](../steady-progress/references/subagents.md)。
 
 三项通用规则统一维护在 `steady-progress`，按当前需要加载，不能以记忆、团队分工或思考强度代替任务授权。
 

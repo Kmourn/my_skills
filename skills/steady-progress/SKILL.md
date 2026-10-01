@@ -30,5 +30,4 @@ description: 在代码修改、测试与阶段交付中落实测试权限、主�
 需要具体操作时按需读取：
 
 - [个人记忆、任务续接与 Skill 沉淀](references/memory.md)：读取已有偏好、整理阶段候选或续接任务。
-- [子智能体派发与回收](references/subagents.md)：安排独立任务、约定写入范围和回收结果。
-- [high／max 指派规则](references/reasoning.md)：同类任务分组、实际参数与生效核对。
+- [子智能体派发与思考强度](references/subagents.md)：安排任务、按执行人数设置强度、协调写入和回收结果；运行兼容说明按需查阅。
