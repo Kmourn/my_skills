@@ -2,7 +2,7 @@
 
 下列本地 Skill 由此仓库统一维护；只有明确标作候选的外部链接尚未部署。来源和本地适配见 [SOURCES.md](SOURCES.md)。
 
-Codex 全局指令备份见 [codex/AGENTS.md](codex/AGENTS.md)，部署位置为 `~/.codex/AGENTS.md`。
+Codex 全局指令备份见 [codex/AGENTS.md](codex/AGENTS.md)，部署到当前 Codex 主目录下的 `AGENTS.md`；主目录优先使用 `CODEX_HOME`，未设置时为 `~/.codex`。默认 Skill 按当前环境提供的路径加载。
 
 ## 通用
 

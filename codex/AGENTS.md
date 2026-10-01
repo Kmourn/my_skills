@@ -2,12 +2,12 @@
 
 ## 默认加载
 
-每个新会话首次收到任务时，先读取以下已部署 Skill：
+每个新会话首次收到任务时，先读取以下已部署 Skill。优先使用当前可用 Skill 清单提供的 `SKILL.md` 路径；清单未提供路径时，在当前 Codex 主目录下的 `skills/<Skill 名称>/SKILL.md` 定位：
 
-- [稳健推进]($HOME/.codex/skills/steady-progress/SKILL.md)：作为任务推进的常规约束，按涉及的操作执行。
-- [场景与模式协作]($HOME/.codex/skills/scene-mode-collaboration/SKILL.md)：用于首次场景、模式确认及后续协作配置。
+- 稳健推进（`steady-progress`）：作为任务推进的常规约束，按涉及的操作执行。
+- 场景与模式协作（`scene-mode-collaboration`）：用于首次场景、模式确认及后续协作配置。
 
-本机 Codex 主目录为 `$HOME/.codex`。
+Codex 主目录优先使用非空的 `CODEX_HOME` 环境变量；未设置时使用当前用户主目录下的 `.codex`，即 `~/.codex`。先展开环境变量及 `~` 再读取文件，不按固定用户名拼接路径。若找不到所需 Skill，说明缺失并请用户提供部署位置。
 
 ## 首次确认与后续推进
 

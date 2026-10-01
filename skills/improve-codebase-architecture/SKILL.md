@@ -35,7 +35,7 @@ Apply the **deletion test** to anything you suspect is shallow: would deleting i
 
 ### 2. Present grounded candidates
 
-Use a concise Markdown report by default. Add a small before/after diagram only when it clarifies ownership or dependency changes. If the user explicitly wants a visual report, use [HTML-REPORT.md](HTML-REPORT.md) and store the artifact in the task workspace under `$HOME`.
+Use a concise Markdown report by default. Add a small before/after diagram only when it clarifies ownership or dependency changes. If the user explicitly wants a visual report, use [HTML-REPORT.md](HTML-REPORT.md) and store the artifact in the task workspace within the current user's actual home directory, resolved from the runtime environment.
 
 For each candidate, render a card with:
 
