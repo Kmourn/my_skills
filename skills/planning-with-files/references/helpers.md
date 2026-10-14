@@ -2,7 +2,7 @@
 
 ## 调用与绑定
 
-所有命令：`python3 -I <skill-dir>/scripts/planning.py <command> [options]`。Python 3.10+，标准库；`-I` 防止项目目录和 `PYTHONPATH` 替换依赖。
+POSIX 示例：`python3 -I <skill-dir>/scripts/planning.py <command> [options]`。使用实际可用的 Python 3.10+ 解释器，标准库；`-I` 防止项目目录和 `PYTHONPATH` 替换依赖。其他平台按实际启动器调用核心 CLI；`hooks-template` / `configure-hooks` 只支持 POSIX shell，非 POSIX 提前退出 2 且不写配置。非 POSIX 核心路径未实机验收。
 
 | 命令 | 行为 |
 |------|------|

@@ -69,7 +69,7 @@ Use only when the user asks for a full/visual architecture report, or when the t
 Rules:
 
 - Markdown stays the default. HTML is never the default for a normal review.
-- Write a single self-contained `.html` file to a temp directory (e.g. `/tmp` or the OS temp dir), **not** into the repo. Report the path.
+- Write a single self-contained `.html` file at the user's requested location within the applicable write boundary. Otherwise, use the task workspace within the current user's actual home directory. An authorized repository report directory is valid. Report the path.
 - Reuse the candidate-card structure above: top recommendation, then cards with strength, files, friction, before/after, testing impact, and what-not-to-change.
 - Before/after diagrams can be simple boxes-and-arrows. Do not require Tailwind, Mermaid, or a build step. Inline minimal CSS is enough.
 - Do not let visual polish become the work. The findings are the product; the HTML is a wrapper.

@@ -4,7 +4,7 @@
 
 ## 提取与渲染
 
-命令中的 `pdf_input`、`pdf_text` 和 `pdf_render_prefix` 是已核对的任务路径；所有输出及临时目录须位于当前用户实际主目录，含空格的路径使用引号。
+下面是 POSIX/Bash 示例。命令中的 `pdf_input`、`pdf_text` 和 `pdf_render_prefix` 是已核对的任务路径；所有输出及临时目录须位于当前用户实际主目录，含空格的路径使用当前 shell 的正确引用。其他平台先核对实际可用的程序名与参数。
 
 ```bash
 pdfinfo "$pdf_input"
@@ -33,4 +33,4 @@ python3 -m venv "$pdf_venv"
 "$pdf_venv/bin/python" -m pip install reportlab
 ```
 
-`pdf_venv` 为已核对的用户目录内路径；只安装实际选用的包，需要表格提取或拆合时再选择 `pdfplumber` 或 `pypdf`。创建环境或安装所需的临时目录、缓存也放在用户目录内，可按项目约定设置 `TMPDIR`、`PIP_CACHE_DIR`；绘图需要时同样设置 `MPLCONFIGDIR`。工具不可安装时报告缺失项和影响，提供可执行的人工检查方法，不运行管理员安装命令。
+`pdf_venv` 为已核对的用户目录内路径；`bin/python` 是 POSIX venv 布局，Windows 使用环境实际的 `Scripts/python.exe` 或已有解释器。只安装实际选用的包，需要表格提取或拆合时再选择 `pdfplumber` 或 `pypdf`。创建环境或安装所需的临时目录、缓存也放在用户目录内：POSIX 可按项目约定设置 `TMPDIR`，Windows 按工具使用 `TEMP` / `TMP`；需要时再配置 `PIP_CACHE_DIR` 和 `MPLCONFIGDIR`，并核对子进程的实际写入位置。工具不可安装时报告缺失项和影响，提供可执行的人工检查方法，不运行管理员安装命令。

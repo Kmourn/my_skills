@@ -1,4 +1,4 @@
-[AGENTS.md](codex/AGENTS.md) · [来源与适配记录](SOURCES.md)
+[AGENTS.md](codex/AGENTS.md) · [跨机器部署](codex/PORTABILITY.md) · [来源与适配记录](SOURCES.md)
 
 ## 通用
 
@@ -24,6 +24,7 @@
 - [experiment-plan](skills/experiment-plan/SKILL.md)：软件实验规划。
 - [experimental-design](skills/experimental-design/SKILL.md)：随机化、分块与因子实验设计。
 - [research-code-style](skills/research-code-style/SKILL.md)：短小直白、参数可见且便于修改复跑的科研代码。
+- [datalad](skills/datalad/SKILL.md)：大数据内容版本、按需获取与 run/rerun 记录。
 - [exploratory-data-analysis](skills/exploratory-data-analysis/SKILL.md)、[statistical-analysis](skills/statistical-analysis/SKILL.md)（按需）：数据探索与统计分析。
 - [scientific-critical-thinking](skills/scientific-critical-thinking/SKILL.md)：研究方法与结论复核。
 - [peer-review](skills/peer-review/SKILL.md)：正式审稿与内部预审报告。

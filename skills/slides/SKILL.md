@@ -16,6 +16,8 @@ Use PptxGenJS for slide authoring. Do not use `python-pptx` for deck generation 
 
 Keep work in a task-local directory. Only copy final artifacts to the requested destination after rendering and validation pass.
 
+Check only the dependencies needed for the current task: the project Node/PptxGenJS environment, required Python libraries, LibreOffice/Poppler, and fonts. Reuse available project tools; examples using Bash or `python3` are POSIX commands, not evidence that another platform has the same executable names. Before running renderers, direct their temporary directories and caches to an allowed task location (`TMPDIR` on POSIX, or tool-appropriate `TEMP`/`TMP` on Windows), and check external-process behavior. A Python temporary-directory setting alone does not constrain every LibreOffice cache. Exact font and rendering results require validation on the target machine.
+
 ## Bundled Resources
 
 - `scripts/render_slides.py`: Rasterize a `.pptx` or `.pdf` to per-slide PNGs.

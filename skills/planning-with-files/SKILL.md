@@ -35,7 +35,7 @@ metadata:
 - [templates/findings.md](templates/findings.md)：来源、发现与决定。
 - [templates/progress.md](templates/progress.md)：执行、失败与对应版本的检查。
 
-`scripts/planning.py` 仅依赖 Python 3.10+ 标准库。下面的 `<skill-dir>` 指当前 `SKILL.md` 所在目录，`<project>` 指明确选定的项目目录；先解析真实路径，不假定固定用户名。
+`scripts/planning.py` 仅依赖 Python 3.10+ 标准库。下面是 POSIX shell 示例，其他平台使用实际可用的 Python 启动器与参数引用；核心非 POSIX 路径分支未实机验收。`<skill-dir>` 指当前 `SKILL.md` 所在目录，`<project>` 指明确选定的项目目录；先解析真实路径，不假定固定用户名。
 
 ```bash
 # 只读查看任务清单；显式复用任意现有记录，绝不重写它
@@ -51,7 +51,7 @@ python3 -I "<skill-dir>/scripts/planning.py" status --project "<project>" --task
 
 ## 可选自动注入与历史
 
-先核对实际客户端的运行方式、版本、事件、配置发现及输出协议，再使用 [references/hooks.md](references/hooks.md) 中的可选方案。本地 command hooks 要求本地编排与本地执行。安装 Skill 本身不启用 hooks；首次配置按已有任务授权显式调用 `configure-hooks`，信任通过客户端正常审阅。
+先核对实际客户端的运行方式、版本、事件、配置发现及输出协议，再使用 [references/hooks.md](references/hooks.md) 中的可选方案。本地 command hooks 要求本地编排与本地执行；本包模板与配置命令只支持 POSIX shell，非 POSIX 报错且不写配置。安装 Skill 本身不启用 hooks；首次配置按已有任务授权显式调用 `configure-hooks`，信任通过客户端正常审阅。
 
 已接入且可信的本地长任务，在确定对应记录后显式 `bind` 当前核实的会话 ID。同 ID 续接读取当下文件；fork 新 ID 要重新绑定；当前任务结束时 `unbind`，避免下一项任务继续注入旧记录。这些绑定与解绑属于已采用方案内的普通本地任务操作，不逐次增加审批。hook 只读查已有绑定，不借用父会话或其他任务。没有 hook 支持时直接读记录或调用 `print`。
 

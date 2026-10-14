@@ -1,6 +1,7 @@
 """Observable CLI regressions; fixtures remain in an explicitly selected HOME cache.
 
 Run: PWF_TEST_ROOT=<home-cache-dir> python3 -I tests/test_planning.py
+Python 3.10+. Hook template/configuration tests require POSIX; symlinks require OS support.
 """
 
 from __future__ import annotations
@@ -9,7 +10,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import pwd
 import shlex
 import subprocess
 import sys
@@ -19,13 +19,34 @@ import unittest
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "planning.py"
 ALL_COMPLETE = "# Task\n## Next Step\nReview actual outputs.\n## Phases\n### Phase 1: delivery\n- **Status:** complete\n"
+MOCK_PLATFORM_CLI = """
+import importlib.util
+import sys
+from types import SimpleNamespace
+
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location("planning_platform_test", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+# Replace only this module's OS reference, leaving pathlib's real platform intact.
+module.os = SimpleNamespace(name=sys.argv[2])
+sys.argv = [sys.argv[1], *sys.argv[3:]]
+sys.exit(module.main())
+"""
+
+
+def real_home() -> Path:
+    if os.name == "posix":
+        import pwd
+        return Path(pwd.getpwuid(os.getuid()).pw_dir).resolve()
+    return Path.home().resolve()
 
 
 class PlanningCli(unittest.TestCase):
     def setUp(self):
         base = Path(os.environ["PWF_TEST_ROOT"]).expanduser().resolve()
-        home = Path(pwd.getpwuid(os.getuid()).pw_dir).resolve()
-        if not base.is_relative_to(home):
+        self.home = real_home()
+        if not base.is_relative_to(self.home):
             raise RuntimeError("PWF_TEST_ROOT must be within real HOME")
         base.mkdir(parents=True, exist_ok=True)
         self.tmp = tempfile.TemporaryDirectory(prefix="planning-test-", dir=base)
@@ -42,18 +63,33 @@ class PlanningCli(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def run_cli(self, *args, payload=None, env=None, cwd=None, expected=0, script=None):
+    def run_cli(self, *args, payload=None, env=None, cwd=None, expected=0, script=None, platform_name=None):
         arguments = list(map(str, args))
         if arguments[0] in {"bind", "unbind", "hook", "hooks-template", "configure-hooks"} and "--registry" not in arguments:
             arguments += ["--registry", str(self.registry)]
         if arguments[0] == "configure-hooks" and "--hooks-file" not in arguments:
             arguments += ["--hooks-file", str(self.hooks_file)]
-        result = subprocess.run([sys.executable, "-I", str(script or SCRIPT), *arguments],
+        command = [sys.executable, "-I", str(script or SCRIPT), *arguments]
+        if platform_name is not None:
+            command = [sys.executable, "-I", "-c", MOCK_PLATFORM_CLI, str(script or SCRIPT), platform_name, *arguments]
+        result = subprocess.run(command,
                                 input=json.dumps(payload) if isinstance(payload, dict) else payload,
                                 cwd=cwd or self.project, env=env or self.env,
                                 text=True, capture_output=True, timeout=5)
         self.assertEqual(result.returncode, expected, result.stderr)
         return result
+
+    def outside_home(self):
+        root = Path(self.home.anchor).resolve()
+        if root.is_relative_to(self.home):
+            self.skipTest("No filesystem root lies outside real HOME")
+        return root
+
+    def symlink(self, link, target, *, target_is_directory=False):
+        try:
+            link.symlink_to(target, target_is_directory=target_is_directory)
+        except (OSError, NotImplementedError) as exc:
+            self.skipTest(f"Symbolic links are unavailable: {exc}")
 
     def task(self, name, text):
         target = self.project / ".planning" / name / "task_plan.md"
@@ -88,7 +124,7 @@ class PlanningCli(unittest.TestCase):
 
     def test_existing_custom_record_is_reused_without_reformatting(self):
         record = self.project / "existing-progress.md"
-        record.write_text("# Existing project record\n已确认选择：沿用原格式\n下一步：检查产物\n")
+        record.write_text("# Existing project record\n已确认选择：沿用原格式\n下一步：检查产物\n", encoding="utf-8")
         before = record.read_bytes()
         output = json.loads(self.run_cli("init", "--record", record.name).stdout)
         self.assertFalse(output["created"])
@@ -150,17 +186,17 @@ class PlanningCli(unittest.TestCase):
         self.run_cli("select", env=env | {"PWF_RECORD": target.name}, expected=2)
 
     def test_paths_resolve_codex_home_without_expanding_write_boundary(self):
-        real_home = Path(pwd.getpwuid(os.getuid()).pw_dir).resolve()
+        home = self.home
         before = self.snapshot()
         result = json.loads(self.run_cli("paths").stdout)
-        self.assertEqual(result["real_home"], str(real_home))
-        value = os.path.expandvars(self.env.get("CODEX_HOME", "").strip() or str(real_home / ".codex"))
+        self.assertEqual(result["real_home"], str(home))
+        value = os.path.expandvars(self.env.get("CODEX_HOME", "").strip() or str(home / ".codex"))
         if value == "~" or value.startswith("~/"):
-            value = str(real_home) + value[1:]
+            value = str(home) + value[1:]
         expected = Path(value)
         expected = expected.resolve() if expected.is_absolute() else (self.project / expected).resolve()
         self.assertEqual(result["codex_home"], str(expected))
-        self.assertEqual(result["codex_home_within_write_boundary"], expected.is_relative_to(real_home))
+        self.assertEqual(result["codex_home_within_write_boundary"], expected.is_relative_to(home))
         self.assertEqual(result["default_binding_registry"], str((expected / "planning-with-files" / "bindings").resolve()))
         self.assertEqual(before, self.snapshot())
 
@@ -168,15 +204,15 @@ class PlanningCli(unittest.TestCase):
         outside = self.root / "other-project"
         outside.mkdir()
         (outside / "existing.md").write_text("Outside project")
-        (self.project / "linked.md").symlink_to(outside / "existing.md")
+        self.symlink(self.project / "linked.md", outside / "existing.md")
         self.run_cli("print", "--record", "linked.md", expected=2)
-        (self.project / ".planning").symlink_to(outside, target_is_directory=True)
+        self.symlink(self.project / ".planning", outside, target_is_directory=True)
         self.run_cli("init", "--task", "alpha", expected=2)
         self.assertFalse((outside / "alpha").exists())
 
     def test_init_outside_real_home_is_rejected_before_write(self):
-        # /proc is an existing, readable directory; the helper must reject before mkdir.
-        result = self.run_cli("init", "--project", "/proc", "--task", "planning-no-write", expected=2)
+        # The filesystem root is an existing directory outside a normal user's HOME.
+        result = self.run_cli("init", "--project", self.outside_home(), "--task", self.root.name, expected=2)
         self.assertIn("Plan write resolves outside", result.stderr)
 
     def test_parser_ignores_examples_and_refuses_duplicate_status(self):
@@ -267,6 +303,7 @@ class PlanningCli(unittest.TestCase):
         self.assertLessEqual(len(output), 512)
         self.assertIn("Context truncated", output)
 
+    @unittest.skipUnless(os.name == "posix", "Hook command templates require a POSIX host")
     def test_hook_template_is_deterministic_and_quotes_shell_metacharacters(self):
         filename = "record-$(touch injected).md"
         (self.project / filename).write_text("Selected unusual filename")
@@ -390,21 +427,22 @@ class PlanningCli(unittest.TestCase):
             self.assert_quiet_hook()
         path.write_text(json.dumps(good))
         target.unlink()
-        target.symlink_to(other)
+        self.symlink(target, other)
         self.assert_quiet_hook()
 
     def test_registry_symlink_and_real_home_boundaries_are_enforced(self):
         self.task("alpha", "Alpha")
-        for registry in ("/proc", str(self.root / "registry-link")):
-            if registry != "/proc":
-                Path(registry).symlink_to("/proc", target_is_directory=True)
+        outside = self.outside_home()
+        link = self.root / "registry-link"
+        self.symlink(link, outside, target_is_directory=True)
+        for registry in (outside, link):
             self.run_cli("bind", "--registry", registry, "--session", "session-A", "--task", "alpha", expected=2)
             self.assert_quiet_hook("--registry", registry)
         a = json.loads(self.run_cli("bind", "--session", "session-A", "--task", "alpha").stdout)
         b = json.loads(self.run_cli("bind", "--session", "session-B", "--task", "alpha").stdout)
         path = Path(a["binding_file"])
         path.unlink()
-        path.symlink_to(b["binding_file"])
+        self.symlink(path, b["binding_file"])
         before = self.snapshot()
         self.assert_quiet_hook()
         self.run_cli("bind", "--session", "session-A", "--task", "alpha", expected=2)
@@ -439,6 +477,7 @@ class PlanningCli(unittest.TestCase):
         self.assert_quiet_hook()
         self.assertEqual(before, self.snapshot())
 
+    @unittest.skipUnless(os.name == "posix", "Hook command templates require a POSIX host")
     def test_custom_registry_and_nested_cwd_respect_the_bound_project(self):
         self.task("alpha", "Alpha")
         registry = self.root / "explicit registry"
@@ -461,6 +500,7 @@ class PlanningCli(unittest.TestCase):
         self.assertIn("Alpha", output.stdout)
         self.assertEqual(before, self.snapshot())
 
+    @unittest.skipUnless(os.name == "posix", "Hook configuration requires a POSIX host")
     def test_configure_hooks_merges_own_entries_backs_up_and_is_idempotent(self):
         template = json.loads(self.run_cli("hooks-template", "--max-chars", 512).stdout)
         own = template["hooks"]["SessionStart"][0]["hooks"][0]
@@ -491,6 +531,7 @@ class PlanningCli(unittest.TestCase):
         self.assertIsNone(again["backup"])
         self.assertEqual(before, self.snapshot())
 
+    @unittest.skipUnless(os.name == "posix", "Hook configuration requires a POSIX host")
     def test_configure_uses_final_helper_path_and_only_removes_verified_copies(self):
         installed = self.root / "installed skill" / "scripts" / "planning.py"
         installed.parent.mkdir(parents=True)
@@ -514,6 +555,7 @@ class PlanningCli(unittest.TestCase):
         self.assertFalse(json.loads(self.run_cli("configure-hooks", script=installed).stdout)["changed"])
         self.assertFalse((hooks.parent / "config.toml").exists())
 
+    @unittest.skipUnless(os.name == "posix", "Hook configuration requires a POSIX host")
     def test_configure_rejects_unknown_or_duplicate_json_without_overwrite(self):
         hooks = self.hooks_file
         hooks.parent.mkdir(parents=True)
@@ -531,16 +573,20 @@ class PlanningCli(unittest.TestCase):
             self.run_cli("configure-hooks", expected=2)
             self.assertEqual(before, self.snapshot())
 
+    @unittest.skipUnless(os.name == "posix", "Hook configuration requires a POSIX host")
     def test_configure_and_registry_cannot_write_outside_real_home(self):
         self.task("alpha", "Alpha")
-        self.run_cli("configure-hooks", "--hooks-file", "/proc/version", expected=2)
-        self.run_cli("bind", "--registry", "/proc", "--session", "session-A", "--task", "alpha", expected=2)
-        self.assert_quiet_hook("--registry", "/proc")
+        outside = self.outside_home()
+        target = outside / (self.root.name + "-hooks.json")
+        self.run_cli("configure-hooks", "--hooks-file", target, expected=2)
+        self.run_cli("bind", "--registry", outside, "--session", "session-A", "--task", "alpha", expected=2)
+        self.assert_quiet_hook("--registry", outside)
         self.hooks_file.parent.mkdir(parents=True)
-        self.hooks_file.symlink_to("/proc/version")
+        self.symlink(self.hooks_file, target)
         self.run_cli("configure-hooks", expected=2)
         self.assertEqual(list(self.hooks_file.parent.iterdir()), [self.hooks_file])
 
+    @unittest.skipUnless(os.name == "posix", "Hook configuration requires a POSIX host")
     def test_template_is_read_only_and_first_configuration_has_no_fake_trust(self):
         before = self.snapshot()
         self.run_cli("hooks-template")
@@ -553,20 +599,50 @@ class PlanningCli(unittest.TestCase):
         self.assertNotIn("trusted_hash", hooks.read_text())
         self.assertEqual(set(json.loads(hooks.read_bytes())["hooks"]), {"SessionStart", "UserPromptSubmit"})
 
+    @unittest.skipUnless(os.name == "posix", "Hook configuration requires a POSIX host")
     def test_explicit_hooks_file_is_isolated_and_resolves_home_contained_symlink(self):
         target = self.root / "explicit-config" / "hooks.json"
         result = json.loads(self.run_cli("configure-hooks", "--hooks-file", target).stdout)
         self.assertEqual(result["hooks_file"], str(target))
         self.assertFalse(self.hooks_file.parent.exists())
         link = self.root / "linked-hooks.json"
-        link.symlink_to(target)
+        self.symlink(link, target)
         before = self.snapshot()
         self.assertFalse(json.loads(self.run_cli("configure-hooks", "--hooks-file", link).stdout)["changed"])
         self.assertEqual(before, self.snapshot())
         self.assertTrue(link.is_symlink())
-        self.run_cli("configure-hooks", "--hooks-file", "/proc/version", expected=2)
+        outside = self.outside_home() / (self.root.name + "-hooks.json")
+        self.run_cli("configure-hooks", "--hooks-file", outside, expected=2)
         self.run_cli("configure-hooks", "--hooks-file", "", expected=2)
         self.run_cli("hooks-template", "--hooks-file", target, expected=2)
+
+    def test_non_posix_template_is_rejected_without_writes(self):
+        before = self.snapshot()
+        entries = sorted(str(path.relative_to(self.root)) for path in self.root.rglob("*"))
+        result = self.run_cli("hooks-template", platform_name="nt", expected=2)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("require a POSIX host", result.stderr)
+        self.assertEqual(before, self.snapshot())
+        self.assertEqual(entries, sorted(str(path.relative_to(self.root)) for path in self.root.rglob("*")))
+        self.assertFalse(self.registry.exists())
+        self.assertFalse(self.hooks_file.parent.exists())
+
+    def test_non_posix_configuration_is_rejected_without_directory_config_or_backup(self):
+        for existing in (False, True):
+            with self.subTest(existing=existing):
+                if existing:
+                    self.hooks_file.parent.mkdir(parents=True)
+                    self.hooks_file.write_bytes(b'{"hooks": {}}\n')
+                before = self.snapshot()
+                entries = sorted(str(path.relative_to(self.root)) for path in self.root.rglob("*"))
+                result = self.run_cli("configure-hooks", platform_name="nt", expected=2)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("require a POSIX host", result.stderr)
+                self.assertEqual(before, self.snapshot())
+                self.assertEqual(entries, sorted(str(path.relative_to(self.root)) for path in self.root.rglob("*")))
+                self.assertFalse(self.registry.exists())
+                if not existing:
+                    self.assertFalse(self.hooks_file.parent.exists())
 
 
 if __name__ == "__main__":

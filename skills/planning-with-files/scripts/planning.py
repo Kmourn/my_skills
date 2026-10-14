@@ -3,6 +3,7 @@
 
 Python 3.10+, standard library. No session-store reads, subprocesses or network.
 Only explicit init, bind/unbind and configure-hooks commands write within real HOME.
+Hook command generation and configuration require a POSIX host.
 """
 
 from __future__ import annotations
@@ -469,7 +470,13 @@ def hook(args: argparse.Namespace) -> int:
     return 0
 
 
+def require_posix_hooks() -> None:
+    if os.name != "posix":
+        raise PlanningError("hooks-template and configure-hooks require a POSIX host")
+
+
 def hooks_template(args: argparse.Namespace) -> dict:
+    require_posix_hooks()
     if args.record is not None or args.task is not None:
         selector(args)
     if args.task is not None and not SLUG.fullmatch(args.task):
@@ -551,6 +558,7 @@ def own_hook_command(handler: dict, interpreter: Path, script: Path, script_hash
 
 
 def configure_hooks(args: argparse.Namespace) -> dict:
+    require_posix_hooks()
     if args.hooks_file == "":
         raise PlanningError("--hooks-file must not be empty")
     target = expanded(args.hooks_file) if args.hooks_file else (codex_home() / "hooks.json").resolve()

@@ -2,6 +2,8 @@
 
 Validation date: **2026-07-23** (local project date).
 
+This is an upstream validation snapshot, retained as source history. It is not a report of tests run in this installation or on the current machine. Repository-level paths below refer to the upstream repository, not to files bundled with this Skill.
+
 ## Baseline
 
 The repository `SECURITY.md` section recorded **10 findings** with maximum severity **CRITICAL**:
@@ -55,7 +57,9 @@ The LLM-assisted pull-request scan reported:
 
 Neither LOW finding permits data transmission, credential access, scientific scoring, or automatic hypothesis selection. No CRITICAL or HIGH issue remains.
 
-## Reproduction
+## Upstream reproduction context
+
+The following commands require the original source repository and its validation tools. They are not installation steps or runnable tests for this standalone package. Use the current task's authorized environment and output directory; retain the original validation date when reporting these historical results.
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
@@ -67,8 +71,8 @@ uv run skill-scanner scan skills/hypothesis-generation --use-behavioral
 
 uv run python scan_pr_skills.py \
   --fail-on HIGH \
-  --output /tmp/hypothesis-generation-pr-scan.md \
+  --output "$validation_output" \
   skills/hypothesis-generation
 ```
 
-The repository-level `SECURITY.md` is intentionally not edited in this scoped refresh; its generated snapshot updates through the repository’s normal scan process.
+`validation_output` denotes an explicitly selected path within the applicable task write boundary. The upstream repository-level `SECURITY.md` was not edited in that scoped refresh; its generated snapshot followed that repository's scan process. Neither it nor `scan_pr_skills.py` is part of this installed Skill.

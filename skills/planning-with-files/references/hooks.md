@@ -1,10 +1,10 @@
 # 可选 Codex hooks
 
-本包提供只读注入 helper、显式会话绑定与配置命令。安装 Skill 不会启用 hooks。2026-10-02 核对的 [OpenAI Hooks 文档](https://learn.chatgpt.com/docs/hooks) 说明：本地 command hooks 适用于编排和执行均在本地的线程；云编排即使在本地执行工具，也不支持这类 hooks。先核对实际客户端的运行方式、配置发现与信任流程。
+本包提供只读注入 helper、显式会话绑定与配置命令。模板与配置使用 POSIX shell 引号；`hooks-template` / `configure-hooks` 在非 POSIX 明确退出 2，且不创建配置、备份或目录。安装 Skill 不会启用 hooks。2026-10-02 核对的 [OpenAI Hooks 文档](https://learn.chatgpt.com/docs/hooks) 说明：本地 command hooks 适用于编排和执行均在本地的线程；云编排即使在本地执行工具，也不支持这类 hooks。先核对实际客户端的运行方式、配置发现与信任流程。
 
 ## 本轮核对的协议
 
-2026-10-01 核对本机 bundled `codex-cli 0.159.2` 的 hooks feature/schema。MVP 使用 `SessionStart` 与 `UserPromptSubmit`；stdin 为单个 JSON，helper 只取 `cwd`、`hook_event_name` 和 `session_id`，忽略 `transcript_path`、用户 prompt 和工具参数。stdout 使用：
+2026-10-01 核对当时受测 `codex-cli 0.159.2` 的 hooks feature/schema；该版本验收不是其他机器或新版本支持证明。MVP 使用 `SessionStart` 与 `UserPromptSubmit`；stdin 为单个 JSON，helper 只取 `cwd`、`hook_event_name` 和 `session_id`，忽略 `transcript_path`、用户 prompt 和工具参数。stdout 使用：
 
 ```json
 {"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"selected planning content"}}
