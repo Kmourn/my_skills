@@ -1,5 +1,3 @@
-# Skill 清单
-
 [AGENTS.md](codex/AGENTS.md) · [来源与适配记录](SOURCES.md)
 
 ## 通用
@@ -29,13 +27,7 @@
 - [exploratory-data-analysis](skills/exploratory-data-analysis/SKILL.md)、[statistical-analysis](skills/statistical-analysis/SKILL.md)（按需）：数据探索与统计分析。
 - [scientific-critical-thinking](skills/scientific-critical-thinking/SKILL.md)：研究方法与结论复核。
 - [peer-review](skills/peer-review/SKILL.md)：正式审稿与内部预审报告。
-
-## 写作
-
 - [scientific-writing](skills/scientific-writing/SKILL.md)：科研论文与报告写作。
-
-## 绘图
-
 - [scientific-visualization](skills/scientific-visualization/SKILL.md)：科研数据图表制作与检查。
 
 ## 汇报
