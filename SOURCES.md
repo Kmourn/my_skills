@@ -20,5 +20,6 @@
 | [JetBrains/skills](https://github.com/JetBrains/skills)（`slides` 元数据注明 OpenAI 来源） | `slides`、`slidev` | [Apache-2.0](skills/slides/LICENSE.txt)、[MIT](skills/slidev/LICENSE.md) | `slidev` 仅用于明确要求的网页演示；可编辑 PPTX 优先用 `slides`。 |
 | [OthmanAdi/planning-with-files，固定提交](https://github.com/OthmanAdi/planning-with-files/tree/51c1caa27f9fefe259e45a7cc92fa79ee8787cd7) | `planning-with-files` | [MIT](skills/planning-with-files/LICENSE) | 复用已有记录、隔离任务；本地标准库 helper 提供会话绑定和两个只读状态 Hook，接入方法见包内 helpers、hooks 和 source 参考。 |
 | 本地编写；[固定方法来源](skills/reference-style-alignment/references/sources.md) | `reference-style-alignment` | [CC0-1.0](skills/reference-style-alignment/licenses/synthesis-CC0.txt)、[MIT／voice-builder](skills/reference-style-alignment/licenses/voice-builder-MIT.txt)、[MIT／imagine](skills/reference-style-alignment/licenses/imagine-MIT.txt) | 将参考特征转换为写作、图像、数据图、PPT 制作约束，复用现有生成能力；保留三个方法来源的完整许可，不引入其账号或服务路由。 |
+| [plbbl/academic-diagram-skill，固定提交](https://github.com/plbbl/academic-diagram-skill/tree/501efb0208bf865897079fa05844c249f0736077) | `academic-diagram` | [MIT](skills/academic-diagram/LICENSE)，不含第三方图像 | 限当前任务授权材料，补共享参数、训练状态、时间对齐与计算先后核对；参考图只保留来源链接，不分发上游图集或示例素材，不新增软件、云服务或账号。详见[来源与适配](skills/academic-diagram/references/source-provenance.md)。 |
 
 本地自编部分保留现有授权状态。Skill 文本不增加操作权限；部署方法见 [跨机器部署指南](codex/PORTABILITY.md)。阶段日志、临时审查与验收材料保留在各机器本地，不随框架分发。

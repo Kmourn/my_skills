@@ -30,6 +30,7 @@
 - [peer-review](skills/peer-review/SKILL.md)：正式审稿与内部预审报告。
 - [scientific-writing](skills/scientific-writing/SKILL.md)：科研论文与报告写作。
 - [scientific-visualization](skills/scientific-visualization/SKILL.md)：科研数据图表制作与检查。
+- [academic-diagram](skills/academic-diagram/SKILL.md)：AI／机器人等科研方法图、架构图和机制示意图的可编辑制作与视觉复核。
 
 ## 汇报
 
