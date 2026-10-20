@@ -1,6 +1,6 @@
 ---
 name: scientific-writing
-description: Draft, revise, and audit scientific manuscripts or reports with explicit evidence provenance, reporting-guideline coverage, authorship accountability, confidentiality controls, and local consistency checks. Use for manuscript sections, references, declarations, tables, figures, or submission preparation when scientific accuracy and traceability matter.
+description: Draft, revise, and audit scientific manuscripts or reports with clear arguments, precise prose, and explicit evidence provenance. Use for manuscript structure and language, references, declarations, tables, figures, or submission preparation when scientific meaning and traceability matter.
 license: MIT
 metadata:
   compatibility: Requires Python 3.11+ only for optional dependency-free local CLIs; core guidance is platform-neutral. Bundled tools are offline and require no API keys.
@@ -74,7 +74,16 @@ discovery but do not verify a claim. See `references/evidence_workflow.md`.
 
 ## Intake
 
-Before drafting, obtain or mark unresolved:
+Distinguish manuscript prose, internal research notes, review records, and submission
+preparation. For language or structure revision, work in the existing TeX, Word, or
+Markdown source and preserve its evidence links. Update affected records and check
+changed claims, numbers, citations, and method-result relationships; do not create a
+new scaffold or run every submission audit for an ordinary prose edit. Final readiness
+still requires the applicable full audits and human approval below.
+Apply the linked workflow references at this same scope.
+
+For the requested scope, reuse available records and obtain or mark unresolved relevant
+items:
 
 - document type, study design, stage, audience, and target venue;
 - current author instructions and policy access date;
@@ -93,8 +102,9 @@ sufficient.
 
 ### 1. Establish the local workspace
 
-Reuse the current draft, research records, IDs, and artifact links. For a new draft without
-suitable records, optionally generate fail-closed Markdown, JSON, and CSV scaffolds:
+Reuse the current source format, draft, research records, IDs, and artifact links. For a
+new draft without suitable records, optionally generate fail-closed Markdown, JSON,
+and CSV scaffolds:
 
 ```bash
 python3 scripts/scaffold_manuscript.py \
@@ -109,8 +119,9 @@ contains placeholders that the linter rejects.
 
 ### 2. Select reporting guidance
 
-Choose by actual design and article type, then open the current official statement,
-checklist, explanation document, extensions, and target-journal instructions.
+When reporting guidance is relevant to the requested work, choose by actual design and
+article type, then open the current official statement, checklist, explanation document,
+extensions, and target-journal instructions.
 
 ```bash
 python3 scripts/select_reporting_guidelines.py select \
@@ -136,7 +147,10 @@ missing IDs:
 - `N`, `M`, `O`, and `R` IDs to numeric facts, methods, outcomes, and results in
   `consistency_manifest.json`.
 
-Store a hash of claim text in CSV rather than raw claim text. During drafting, append:
+Preserve the project's existing claim/evidence mapping, including non-rendered source
+annotations or linked review records. Keep internal audit details from determining the
+prose order. When using the bundled Markdown/CSV audit format, store a hash of claim
+text in CSV rather than raw claim text and append:
 
 ```text
 [claim:C001] [evidence:E001,E002]
@@ -151,10 +165,17 @@ Reuse prior human verification when the source version, claim, and supporting lo
 are unchanged. When any of them changes, preserve the prior verification history in the
 existing record, mark affected current links unverified, and recheck them.
 
-### 4. Create an evidence outline
+### 4. Organize the argument from evidence
 
-Outline from recorded source material and actual local results. Mark each unresolved
-human review in the outline and internal draft, linked to its claim/evidence IDs:
+Identify the research question, the specific difference from prior work, the reason for
+the design, the central claims, and the evidence and conditions supporting them. Do not
+invent a gap or inflate novelty to complete this framing. Arrange sections to develop
+these relationships; the order of experiments or audit records need not be the prose
+order. Keep the declared outcomes and analysis populations identifiable.
+
+Use the existing outline or revise only the part needed for the task, drawing on
+recorded source material and actual local results. Preserve unresolved human-review
+states in the outline and internal draft, linked to their claim/evidence IDs:
 
 - objective or question;
 - section purpose;
@@ -174,6 +195,20 @@ Transform the evidence outline into venue-appropriate prose. Preserve all IDs an
 pending-review marks during internal drafting; keep the draft banner and
 `submission_ready` false until final review is complete.
 
+For drafting or prose revision, read `references/writing_principles.md`, including its
+manuscript voice convention. Explain what a design or result means for the research question;
+introduce technical context before asking the reader to interpret a new term or formula.
+Keep scope and uncertainty beside the claims they qualify, and merge repeated caveats.
+Preserve pending-review states in the established annotations or review record without
+turning the verification process into repeated manuscript prose.
+
+When a specific venue style or sample is requested, use the available
+`reference-style-alignment` writing branch to compare passages with the same function.
+Use its observed structure and sentence relationships with this study's own facts;
+sample wording, first-person usage, and novelty claims do not override the current
+author's instructions or scientific meaning. If that skill is unavailable, compare the
+supplied passages directly without making it an installation prerequisite.
+
 - Match title and abstract to the completed main text.
 - Describe methods as performed.
 - Present results in the declared order and analysis population.
@@ -184,6 +219,11 @@ pending-review marks during internal drafting; keep the draft banner and
 Use IMRAD only when appropriate. Structured abstracts, lists, combined sections, and
 alternative structures depend on study design and venue. See
 `references/imrad_structure.md` and `references/writing_principles.md`.
+
+Assess the revised passages for a clear question or point, necessary reasoning or
+evidence, stable terminology, and an interpretable conclusion. Check that claims,
+conditions, citations, and formula meanings are preserved. A passing evidence audit,
+fixed sentence count, or style-similarity score does not establish prose quality.
 
 ### 6. Reconcile methods and results
 
@@ -321,9 +361,11 @@ COPE positions from discussion documents, webinars, comments, and case advice.
 
 ## Formatting and submission
 
-The former LaTeX assets were removed because a generic polished template could allow
-plausible placeholders to ship. Use the Markdown scaffold and structured records.
-Apply the target venue's current controlled template only after verification.
+Continue in the project's TeX, Word, or Markdown source and use its established venue
+template. Markdown scaffolds are optional for new workspaces. An internal draft may
+use publisher formatting while retaining its draft status, unresolved markers, and
+evidence records. Formatting does not authorize clearing verification gates or
+submission; final readiness still requires the applicable audits and human approval.
 
 See:
 

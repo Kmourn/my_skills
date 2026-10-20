@@ -1,19 +1,21 @@
 # Fail-Closed Report Formatting Guide
 
-This asset replaces the former LaTeX package and example report. The former template
-contained plausible-looking placeholder findings that could compile into a polished but
-unverified document. Use the Markdown scaffold and structured registries instead.
+Use the project's existing editable source and evidence records. The bundled Markdown
+scaffold is optional for a new workspace; an existing TeX or Word manuscript can remain
+in its established format and template.
 
 ## Safe default
 
-1. Generate a workspace with `scripts/scaffold_manuscript.py`.
+1. Reuse the current workspace. If a new one needs a scaffold,
+   `scripts/scaffold_manuscript.py` is an optional starting point.
 2. Keep the `DRAFT — NOT FOR SUBMISSION` banner while any placeholder or verification
    gate remains.
-3. Draft in plain Markdown. Apply publisher formatting only after content verification.
+3. Draft and revise in the chosen source format. Publisher formatting may be used for
+   an internal draft without clearing pending verification states.
 4. Treat the target journal's current author instructions and supplied template as
    controlling.
-5. Re-run every local audit after formatting because conversion can change citations,
-   symbols, tables, and references.
+5. Recheck citations, symbols, tables, and references affected by formatting or
+   conversion. Run the applicable full audits before declaring final readiness.
 
 ## Hierarchy
 
@@ -45,9 +47,9 @@ Figures are optional. This skill does not generate images. A retained figure mus
 
 Never invent a figure, image, diagram, graphical abstract, or missing visual result.
 
-## Conversion gate
+## Submission readiness gate
 
-Before producing a submission format, confirm:
+Before labeling a manuscript submission-ready or submitting it, confirm:
 
 - placeholders are absent;
 - factual and numeric claims map to verified evidence IDs;

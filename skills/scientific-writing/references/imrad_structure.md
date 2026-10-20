@@ -33,6 +33,20 @@ Build a short evidence chain:
 Do not claim that no prior work exists unless a suitable search verifies that claim.
 Avoid previewing unsupported results or inflating significance.
 
+## Method and theory papers
+
+Choose the structure by the actual contribution. Connect the technical question and
+prior approaches to the design rationale, the proposed method or analysis, and the
+evidence supporting its claims. Explain what a definition, assumption, derivation, or
+experiment contributes to this argument; do not adopt a clinical reporting structure
+solely because the artifact is a research paper.
+
+For formal analysis, state the question and useful intuition before the precise setup,
+then keep assumptions, notation, and the scope of each result explicit. For experiments,
+make the tested claim and comparison clear. Evidence can support an adaptation or an
+explanation of existing methods without establishing a new mechanism or paradigm.
+These are relationships to explain, not mandatory headings, section order, or counts.
+
 ## Methods
 
 Methods should permit evaluation and, where feasible, reproduction. Cover the elements

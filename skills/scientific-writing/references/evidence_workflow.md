@@ -40,17 +40,22 @@ Local results should link back through analysis to the actual run, raw output or
 the plan tested, and the code/data versions. Add figure and manuscript links as they are
 created; distinguish planned settings from actual execution and preserve deviations.
 
-## Claim markers
+## Claim and evidence links
 
-Append machine-readable markers to every factual or numeric assertion while drafting:
+Every factual or numeric assertion needs an auditable link to evidence and a review
+state. Preserve existing source annotations or linked review records for TeX, Word,
+or other manuscript formats; do not require conversion or a duplicate ledger.
+
+For the bundled Markdown/CSV auditor, append machine-readable markers:
 
 ```text
 [claim:C001] [evidence:E001,E002]
 ```
 
-An alternative citation marker is `[@E001]`. Keep the claim and evidence markers on the
-same line until the audit passes. A final publisher conversion may replace evidence IDs
-with rendered citations only after preserving an auditable mapping.
+An alternative citation marker is `[@E001]`. In that Markdown input, keep the claim and
+evidence markers on the same line until the audit passes. This syntax is a CLI input
+requirement, not a universal manuscript format. Final rendered citations may replace
+internal evidence IDs only while preserving their auditable mapping and review states.
 
 ## Verification procedure
 
@@ -75,7 +80,8 @@ fields to the verification object or creating a second ledger.
 For each claim:
 
 1. Classify it as factual, numeric, method, result, interpretive, or declaration.
-2. Hash the normalized claim text and store the hash in `claims.csv`.
+2. When using the bundled CSV format, hash the normalized claim text and store the hash
+   in `claims.csv`; otherwise retain the project's existing versioned claim mapping.
 3. Map it to evidence IDs; retain pending review in an internal draft and require verified
    support for submission-ready prose.
 4. Record uncertainty and whether the analysis was confirmatory, exploratory,
@@ -106,6 +112,11 @@ python3 scripts/audit_claims.py manuscript.md claims.csv source_manifest.json
 python3 scripts/check_consistency.py consistency_manifest.json
 python3 scripts/check_references.py source_manifest.json
 ```
+
+These commands require their documented Markdown/JSON/CSV inputs. For another source
+format, use the established records and compatible checks to cover the same evidence,
+verification, citation, and consistency requirements. Do not claim that the Markdown
+auditor checked TeX or Word directly.
 
 Tool output contains IDs and line numbers, not manuscript or source text. A passing
 machine audit supports review; it does not replace human scientific judgment. During

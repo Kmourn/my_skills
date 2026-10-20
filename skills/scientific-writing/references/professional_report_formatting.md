@@ -1,22 +1,28 @@
 # Safe Formatting for Reports and Manuscripts
 
-## Content before presentation
+## Source format and draft status
 
-The former LaTeX style and demonstration report were removed. They could turn
-plausible-looking placeholder findings into a polished PDF. This version uses
-format-neutral Markdown and JSON/CSV registries so incompleteness remains visible.
+Reuse the project's TeX, Word, or Markdown source, established template, and evidence
+records. The bundled Markdown scaffold is an option for a new workspace, not a
+conversion requirement for an existing manuscript.
 
-Do not format a draft as submission-ready while any verification gate is incomplete.
-Visual polish is not evidence.
+An internal draft may use the venue's template while keeping its draft status,
+placeholders, and unresolved verification states visible in the established locations.
+Do not label it submission-ready while any required gate is incomplete. Visual polish
+is not evidence.
 
 ## Workflow
 
-1. Create a local scaffold.
-2. Draft and verify content in Markdown.
-3. Run manifest, claim, reference, consistency, authorship, coverage, and lint checks.
-4. Obtain accountable human approval.
-5. Copy the verified content into the current venue template.
-6. Re-run checks that remain applicable and inspect the rendered output manually.
+1. Continue in the existing source, or select a suitable format for a new draft.
+2. Draft or revise the requested content, preserving evidence links and review states.
+3. Check affected claims, references, numbers, and method-result mappings. Use the
+   bundled CLIs only for their supported input formats; prose revision does not require
+   reconstructing all records or exporting a full Markdown copy.
+4. Inspect the affected rendered output when formatting or layout changes. After a
+   conversion, recheck the citations, symbols, tables, or references it could alter.
+5. Before final readiness, complete the applicable manifest, claim, reference,
+   consistency, authorship, coverage, and lint audits and obtain accountable human
+   approval. Formatting and ordinary editing do not waive these requirements.
 
 For a journal or conference, use its current author instructions and official template.
 For an institutional report or thesis, use the institution's controlled template.
@@ -72,7 +78,7 @@ contribution, data or code promise, or AI disclosure.
 
 Retain:
 
-- the verified Markdown source;
+- the manuscript's editable source in its actual format;
 - the structured registries;
 - the exact venue template version;
 - conversion instructions and software versions;
