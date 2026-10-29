@@ -4,7 +4,7 @@ description: Draft, revise, and audit scientific manuscripts or reports with cle
 license: MIT
 metadata:
   compatibility: Requires Python 3.11+ only for optional dependency-free local CLIs; core guidance is platform-neutral. Bundled tools are offline and require no API keys.
-  version: "2.1"
+  version: "2.2"
   skill-author: K-Dense Inc.
 ---
 
@@ -33,6 +33,10 @@ to an external service without:
 When authorization or policy is unclear, keep processing local and use only the minimum
 metadata needed. De-identification requires expert review; removing obvious names is
 not sufficient. See `references/authorship_ai_confidentiality.md`.
+
+Reuse existing authorization and its recorded review while the material, purpose,
+provider, and processing boundary remain covered. Routine calls in that scope do not
+require repeated confirmation; a writing workflow does not authorize unrelated material.
 
 ### No fabrication
 
@@ -201,6 +205,17 @@ introduce technical context before asking the reader to interpret a new term or 
 Keep scope and uncertainty beside the claims they qualify, and merge repeated caveats.
 Preserve pending-review states in the established annotations or review record without
 turning the verification process into repeated manuscript prose.
+
+For substantial expression work, use `academic-voice` when available; for IEEE-specific
+polishing, use `ieee-polishing` with its section and failure-mode references. Preserve
+the author's established voice choices. These companions improve expression while this
+skill maintains scientific meaning and evidence links.
+
+GPT may call the locally configured DeepSeek API to assist academic writing: GPT
+develops ideas, argument structure, and scientific constraints; DeepSeek improves
+expression; GPT then checks scientific fidelity while retaining effective explanatory
+prose. Read [GPT–DeepSeek collaboration](references/deepseek_collaboration.md) when
+using this division of work. Existing authorization carries forward within its scope.
 
 When a specific venue style or sample is requested, use the available
 `reference-style-alignment` writing branch to compare passages with the same function.
@@ -406,6 +421,7 @@ All scripts are local, deterministic, bounded, dependency-free, and network-free
 
 - `references/evidence_workflow.md`
 - `references/writing_principles.md`
+- `references/deepseek_collaboration.md`
 - `references/imrad_structure.md`
 - `references/citation_styles.md`
 - `references/reporting_guidelines.md`

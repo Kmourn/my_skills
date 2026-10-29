@@ -28,7 +28,9 @@
 - [exploratory-data-analysis](skills/exploratory-data-analysis/SKILL.md)、[statistical-analysis](skills/statistical-analysis/SKILL.md)（按需）：数据探索与统计分析。
 - [scientific-critical-thinking](skills/scientific-critical-thinking/SKILL.md)：研究方法与结论复核。
 - [peer-review](skills/peer-review/SKILL.md)：正式审稿与内部预审报告。
-- [scientific-writing](skills/scientific-writing/SKILL.md)：科研论文与报告写作。
+- [scientific-writing](skills/scientific-writing/SKILL.md)：科研论文与报告写作；允许 GPT 组织内容、DeepSeek API 优化表达，再核对科学含义。
+- [academic-voice](skills/academic-voice/SKILL.md)：面向读者的学术解释、论证展开与自然语气。
+- [ieee-polishing](skills/ieee-polishing/SKILL.md)：按章节和表达问题修订 IEEE 论文；共享参考文件位于 `skills/_shared/`。
 - [scientific-visualization](skills/scientific-visualization/SKILL.md)：科研数据图表制作与检查。
 - [academic-diagram](skills/academic-diagram/SKILL.md)：AI／机器人等科研方法图、架构图和机制示意图的可编辑制作与视觉复核。
 
