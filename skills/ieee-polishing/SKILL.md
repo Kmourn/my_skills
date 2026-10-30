@@ -14,6 +14,11 @@ rule; honor an explicitly requested voice and avoid mechanical passive construct
 
 Do not polish only from memory. Follow the routing protocol and load the selected fragments.
 
+For author-directed edits to manuscript files, first follow
+[human-directed revision](../scientific-writing/references/human-directed-revision.md)
+to propose the location, replacement, and scope for approval before writing. Return
+the polished proposal in chat while approval is pending.
+
 ## Routing Protocol
 
 1. Read `manifest.yaml`.

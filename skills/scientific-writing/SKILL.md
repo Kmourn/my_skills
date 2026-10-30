@@ -1,6 +1,6 @@
 ---
 name: scientific-writing
-description: Draft, revise, and audit scientific manuscripts or reports with clear arguments, precise prose, and explicit evidence provenance. Use for manuscript structure and language, references, declarations, tables, figures, or submission preparation when scientific meaning and traceability matter.
+description: Draft, revise, and audit scientific manuscripts or reports with clear arguments, precise prose, and explicit evidence provenance. Use for manuscript structure and language, author-directed revision with confirmation before editing, references, declarations, tables, figures, or submission preparation when scientific meaning and traceability matter.
 license: MIT
 metadata:
   compatibility: Requires Python 3.11+ only for optional dependency-free local CLIs; core guidance is platform-neutral. Bundled tools are offline and require no API keys.
@@ -85,6 +85,10 @@ changed claims, numbers, citations, and method-result relationships; do not crea
 new scaffold or run every submission audit for an ordinary prose edit. Final readiness
 still requires the applicable full audits and human approval below.
 Apply the linked workflow references at this same scope.
+
+When the author gives suggestions or requests an interactive revision of manuscript
+files, read [human-directed revision](references/human-directed-revision.md). Locate
+and propose the specific changes before writing, then apply only the approved scope.
 
 For the requested scope, reuse available records and obtain or mark unresolved relevant
 items:
@@ -422,6 +426,7 @@ All scripts are local, deterministic, bounded, dependency-free, and network-free
 - `references/evidence_workflow.md`
 - `references/writing_principles.md`
 - `references/deepseek_collaboration.md`
+- `references/human-directed-revision.md`
 - `references/imrad_structure.md`
 - `references/citation_styles.md`
 - `references/reporting_guidelines.md`
