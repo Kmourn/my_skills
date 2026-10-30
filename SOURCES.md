@@ -5,6 +5,7 @@
 | 来源 | 本地 Skill | 许可证 | 本地适配 |
 | --- | --- | --- | --- |
 | 本地编写 | `steady-progress`、`scene-mode-collaboration`、`research-cycle` | 本仓库自有 | 通用推进规则，以及按场景、模式和任务规模组织工作；记忆确认、Skill 沉淀、实际子智能体和人数强度规则统一归入 `steady-progress`。 |
+| 本地编写；用户于 2026-10-30 确认的研究价值评估准则 | `research-cycle`、`hypothesis-generation`、`literature-review`、`scientific-critical-thinking`、`experiment-plan`，共用[研究价值与实质区分](skills/_shared/references/research-value-and-differentiation.md) | 本地自编部分沿用现有授权状态 | 不以“绝对原创”为门槛，依据最接近工作辨明新增价值、真实重合与可检验差异；按需读取单份共享参考，普通综述与统计复核不强制生成贡献评估。 |
 | [lennney/stop-that-shit](https://github.com/lennney/stop-that-shit)（此前保存的本地副本） | `stop-that-shit`、`stss` | [MIT](licenses/stop-that-shit-LICENSE) | 按任务需要调用，允许自动选择。未安装 Guard 或 Hook。 |
 | [mattpocock/skills](https://github.com/mattpocock/skills) | `grill-me`、`grilling`、`improve-codebase-architecture` | [MIT](licenses/mattpocock-skills-LICENSE) | `grill-me` 改为读取已安装依赖；架构维护 Skill 去除未安装依赖、强制 HTML 报告和自动写入项目文档。 |
 | [tyshkovskii/reviewing-code-modularity-skill](https://github.com/tyshkovskii/reviewing-code-modularity-skill) | `reviewing-code-modularity-skill` | [MIT](skills/reviewing-code-modularity-skill/LICENSE) | 保留方法主体；HTML 输出位置与当前任务写入边界一致，移除固定 OS 临时目录假设。 |

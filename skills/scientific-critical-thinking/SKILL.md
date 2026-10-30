@@ -17,6 +17,8 @@ Critical thinking is a systematic process for evaluating scientific rigor. Asses
 
 For a formal reviewer report, use `peer-review` only if it is actually available and applicable. Otherwise prepare the requested report from the supplied materials with the existing tools; a missing Skill is not a reason to install one or block authorized work.
 
+Read [research value and differentiation](../_shared/references/research-value-and-differentiation.md) only when evaluating a research idea's value or overlap with prior work. General statistical or evidence-quality checks do not require this reference.
+
 ## When to Use This Skill
 
 This skill should be used when:

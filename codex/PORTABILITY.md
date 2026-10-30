@@ -8,6 +8,7 @@
 - 当前可用 Skill 清单提供的路径优先。Codex 主目录使用非空 `CODEX_HOME`，否则当前真实主目录下 `.codex`；先展开环境变量与 `~`，核对客户端实际发现的位置和允许写入范围。
 - 迁移 `codex/AGENTS.md` 到客户端 `AGENTS.md`，以及本次采用的 `skills/<name>/` 完整必要文件。许可、来源、引用、模板和脚本随包保留。
 - `ieee-polishing` 还依赖同级 `skills/_shared/` 中的共享参考与许可，须一起部署；`_shared` 是支持目录，不作为独立 Skill 调用。DeepSeek 写作协作复用目标机器现有 API 配置，不迁移凭据或机器绑定的调用脚本。
+- `research-cycle`、`hypothesis-generation`、`literature-review`、`scientific-critical-thinking`、`experiment-plan` 共用 `skills/_shared/references/research-value-and-differentiation.md`，采用其中任何一个 Skill 时须随包部署这份共享文件。保留 `_shared` 中其他已部署的参考与许可，不整目录覆盖目标。
 - 同步前比较目标。存在本地补充或修改时核对来源与当前用户决定；保留无关 Skill、客户端配置、系统 Skill 和插件，不整体覆盖客户端目录。
 - 个人记忆、会话、凭据、registry 绑定、旧机器 `hooks.json` 和信任状态是本机状态，不作为可迁移框架文件。
 

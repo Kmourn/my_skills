@@ -81,6 +81,11 @@ conflicting report, limited evaluation, or question unsupported in the reviewed
 corpus. A failed search does not prove novelty. Separate proposed next steps
 from conclusions supported by existing evidence.
 
+When the user asks to evaluate a specific idea or contribution, read
+[research value and differentiation](../_shared/references/research-value-and-differentiation.md)
+and apply it to the closest reviewed work. Ordinary reviews do not require this
+reference or a contribution statement.
+
 ## Draft and check the requested product
 
 Honor the user's Markdown, document, LaTeX, or other chosen format and project

@@ -49,19 +49,21 @@ Before proposing experiments, write down the claims and predictions to test, inc
 
 Use this structure:
 
-- **Primary claim**: the main mechanism-level contribution
+- **Primary claim**: the main testable contribution, such as better performance, efficiency, user experience, meeting a new need, or a mechanism-level advance
 - **Supporting claim**: optional, only if it directly strengthens the main paper story
 - **Rival explanation**: e.g. "the gain only comes from more parameters," "the gain only comes from a larger search space," or "the modern component adds no value"
 - **Discriminating evidence**: what outcomes would support, challenge, or leave each claim unresolved under stated assumptions?
 
 Keep only the claims needed to answer the question; record why additional inseparable claims are necessary when relevant.
 
+When the contribution or its distinction from prior work needs clarification, read [research value and differentiation](../_shared/references/research-value-and-differentiation.md).
+
 ### Phase 2: Build the Experimental Storyline
 
 Design the paper around a compact set of experiment blocks. Default to the following blocks and delete any that are not needed:
 
 1. **Main anchor result** — does the method solve the actual bottleneck?
-2. **Novelty isolation** — does the dominant contribution itself matter?
+2. **Contribution validation** — do comparisons support the claimed value, and which contribution accounts for it?
 3. **Simplicity / elegance check** — can a bigger or more fragmented version be avoided?
 4. **Frontier necessity check** — if an LLM / VLM / Diffusion / RL-era component is central, is it actually the right tool?
 5. **Failure analysis or qualitative diagnosis** — what does the method still miss?
@@ -90,6 +92,7 @@ For every kept block, fully specify:
 
 Special rules:
 
+- **Contribution validation** should use comparisons and, where appropriate, ablations to test the claimed value and where it comes from. Originality requires comparison with prior literature; an ablation does not prove originality.
 - A **simplicity check** should usually compare the final method against either an overbuilt variant or a tempting extra component that the paper intentionally rejects.
 - A **frontier necessity check** should usually compare the chosen modern primitive against the strongest plausible simpler or older alternative.
 - If the proposal is intentionally non-frontier, say so explicitly and skip the frontier block instead of forcing one.
@@ -103,7 +106,7 @@ Use this milestone structure:
 1. **Sanity stage** — data pipeline, metric correctness, one quick overfit or toy split
 2. **Baseline stage** — reproduce the strongest baseline(s)
 3. **Main method stage** — run the final method on the primary setting
-4. **Decision stage** — run the decisive ablations for novelty, simplicity, and frontier necessity
+4. **Decision stage** — run the decisive comparisons and ablations for contribution validation, simplicity, and frontier necessity
 5. **Polish stage** — robustness, qualitative figures, appendix extras
 
 For each milestone, estimate:
@@ -174,7 +177,7 @@ Reuse the existing file, section, IDs, and links. Create a separate plan only wh
 ## Final Checklist
 - [ ] Main paper tables are covered
 - [ ] Core claims have supporting, challenging, and indeterminate outcome criteria
-- [ ] Novelty, simplicity, and any frontier contribution are tested where claimed
+- [ ] Contribution validation, simplicity, and any frontier contribution are tested where claimed
 - [ ] Negative results, execution failures, and deviations have a place in the existing record
 - [ ] Nice-to-have runs are separated from must-run runs
 ```

@@ -92,6 +92,8 @@ Choose a framework only when it fits:
 
 PICO is not a universal template. Define stakeholders, context, boundaries, feasibility, and what answer would change knowledge or practice. FINER is a question-refinement mnemonic—Feasible, Interesting, Novel, Ethical, Relevant—not a scoring system. Treat “Novel” as unresolved until a documented, fit-for-purpose search and expert review support it.
 
+To assess a specific idea's value or overlap with prior work, read [research value and differentiation](../_shared/references/research-value-and-differentiation.md). Meaningful added value does not require an unprecedented idea.
+
 ### 4. Establish a dated evidence boundary
 
 Search before making literature-dependent statements. Prefer primary research, official policies, primary methods papers, current reporting guidelines, and systematic reviews used for orientation.
