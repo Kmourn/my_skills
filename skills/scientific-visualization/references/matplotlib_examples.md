@@ -2,9 +2,10 @@
 
 Verified 2026-07-23 against Matplotlib 3.11.1, Seaborn 0.13.2, Plotly 6.9.0, Kaleido 1.3.0, Pillow 12.3.0, and pypdf 6.14.2. Source IDs resolve in `sources.md`.
 
-Run examples from the skill directory with pinned direct dependencies:
+Adapt the examples to the project environment. Dimensions, formats, styles, and dependency pins here illustrate particular cases. To reproduce the pinned setup, run from the skill directory:
 
 ```bash
+PYTHONPATH="scripts:assets${PYTHONPATH:+:$PYTHONPATH}" \
 uv run --isolated --no-project --python 3.13 \
   --with "matplotlib==3.11.1" \
   --with "seaborn==0.13.2" \
@@ -59,10 +60,11 @@ You can also use the bundled parseable style:
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-skill_root = Path("skills/scientific-visualization")
-with plt.style.context(skill_root / "assets" / "publication.mplstyle"):
+with plt.style.context(Path("assets/publication.mplstyle")):
     fig, ax = plt.subplots(layout="constrained")
 ```
+
+The bundled style files cover general publication, flagship Nature, and presentation examples. Use `scripts/style_presets.py --list` to discover presets and `scripts/style_preview.py --help` for preview options.
 
 ## Preserve raw observations and define uncertainty
 
