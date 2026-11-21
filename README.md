@@ -2,7 +2,7 @@
 
 ## 通用
 
-- [稳健推进](skills/steady-progress/SKILL.md)：任务推进、阶段确认、按需委派与 high／max 指派。
+- [稳健推进](skills/steady-progress/SKILL.md)：任务推进、阶段确认、按需委派与思考强度。
 - [场景与模式协作](skills/scene-mode-collaboration/SKILL.md)：按场景与模式组织分工、Skill 和人机交接。
 - [grill-me](skills/grill-me/SKILL.md) 与依赖 [grilling](skills/grilling/SKILL.md)：AI 主导追问。
 - [pdf](skills/pdf/SKILL.md)：PDF 提取、生成与检查。

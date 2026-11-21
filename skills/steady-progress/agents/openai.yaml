@@ -1,5 +1,5 @@
 interface:
   display_name: "稳健推进"
-  short_description: "主目录内稳健推进，阶段末确认记忆与 Skill，并按执行人数指派 high/max"
+  short_description: "按确认范围推进并验收任务，管理版本谱系、按需委派和思考强度"
 policy:
   allow_implicit_invocation: true
